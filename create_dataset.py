@@ -21,10 +21,10 @@ users_small = users.loc[users['User-ID']
 users_small.to_csv('./data/Users.csv', index=False)
 
 
-with open('./nounlist.txt') as nounfile:
+with open('./data/nounlist.txt') as nounfile:
     nouns = nounfile.readlines()
 
-with open('./adjectives.txt') as adjfile:
+with open('./data/adjectives.txt') as adjfile:
     adjectives = adjfile.readlines()
 
 num_of_users = users_small.shape[0]
