@@ -1,48 +1,46 @@
-import numpy as np
 import pandas as pd
 import random
 import string
 
-# dataset taken from: https://www.kaggle.com/datasets/arashnic/book-recommendation-dataset
-books_small = pd.read_csv('./BookDataset/Books.csv',
-                          low_memory=False).sample(n=1000)
+if __name__ == '__main__':
+    # dataset taken from: https://www.kaggle.com/datasets/arashnic/book-recommendation-dataset
+    num_of_users = 1000
 
-books_small.to_csv('./data/Books.csv', index=False)
+    users = pd.DataFrame({'User-ID': list(range(1, num_of_users + 1))})
 
-ratings = pd.read_csv('./BookDataset/Ratings.csv')
-ratings_small = ratings.loc[ratings['ISBN'].isin(books_small['ISBN'])]
+    with open('./BookDataset/nounlist.txt') as nounfile:
+        nouns = nounfile.readlines()
 
-ratings_small.to_csv('./data/Ratings.csv', index=False)
+    with open('./BookDataset/adjectives.txt') as adjfile:
+        adjectives = adjfile.readlines()
 
-users = pd.read_csv('BookDataset/Users.csv')
-users_small = users.loc[users['User-ID']
-                        .isin(ratings_small['User-ID'])]
+    usernames = [f'{random.choice(adjectives).title()}{random.choice(nouns).title()}{"".join(random.choices(string.digits, k=random.randint(0, 4)))}'
+                 .replace('\n', '').replace('-', '') for _ in range(num_of_users)]
 
-users_small.to_csv('./data/Users.csv', index=False)
+    passwords = [''.join(random.choices(
+        [*string.ascii_letters, *string.digits], k=random.randint(6, 20))) for _ in range(num_of_users)]
 
+    users.insert(len(users.columns), 'username', usernames)
+    users.insert(len(users.columns), 'password', passwords)
 
-with open('./data/nounlist.txt') as nounfile:
-    nouns = nounfile.readlines()
+    # users.to_csv('./data/Users.csv', index=False)
+    ratings = pd.read_csv('./BookDataset/Ratings.csv')
 
-with open('./data/adjectives.txt') as adjfile:
-    adjectives = adjfile.readlines()
+    ratings_small = ratings.loc[ratings['User-ID'].isin(users['User-ID'])]
 
-num_of_users = users_small.shape[0]
+    top_rating_users = ratings_small['User-ID'].groupby(
+        ratings['User-ID']).value_counts().nlargest(10)
+    print(top_rating_users)
 
-usernames = [f'\
-{random.choice(adjectives).title()}\
-{random.choice(nouns).title()}\
-{"".join(random.choices(string.digits, k=random.randint(0, 4)))}'
-             .replace('\n', '') for _ in range(num_of_users)]
+    top_rated_books = ratings_small['ISBN'].groupby(
+        ratings['ISBN']).value_counts().nlargest(10)
+    print(top_rated_books)
 
-passwords = [''.join(random.choices(
-    [*string.ascii_letters, *string.digits], k=random.randint(6, 20))) for _ in range(num_of_users)]
+    # ratings_small.to_csv('./data/Ratings.csv', index=False)
 
-users_small.insert(len(users_small.columns), 'username', usernames)
-users_small.insert(len(users_small.columns), 'password', passwords)
+    books = pd.read_csv('BookDataset/Books.csv', low_memory=False)
 
-with open('data/UsersExtraData.csv', 'w') as outfile:
-    outfile.writelines(
-        [f'{username},{password}\n' for username, password in zip(usernames, passwords)])
+    books_small = books.loc[books['ISBN']
+                            .isin(ratings_small['ISBN'])]
 
-users_small.to_csv('./data/UsersFull.csv', index=False)
+    # books_small.to_csv('./data/Books.csv', index=False)

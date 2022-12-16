@@ -1,3 +1,5 @@
+
+
 require('dotenv').config();
 
 (async() => {
@@ -11,13 +13,15 @@ require('dotenv').config();
     const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
 
     try {
-        const person1Name = 'Alice';
-        const person2Name = 'David';
+        await loadDataFromCSV();
+        // const person1Name = 'Alice';
+        // const person2Name = 'David';
 
-        await createFriendship(driver, person1Name, person2Name);
+        // await createFriendship(driver, person1Name, person2Name);
 
-        await findPerson(driver, person1Name);
-        await findPerson(driver, person2Name);
+        // await findPerson(driver, person1Name);
+        // await findPerson(driver, person2Name);
+
     } catch (error) {
         console.error(`Something went wrong: ${error}`);
     } finally {
