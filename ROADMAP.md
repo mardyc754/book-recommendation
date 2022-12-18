@@ -40,3 +40,18 @@ Komunikacja klient-serwer będzie się odbywać za pomocą REST. Zostaną utworz
 - DELETE `/books/id:książki/rate` - usunięcie oceny książki
 - GET `/books/user/id:usera` - wyświetlenie informacji o użytkowniku, jego zapisanych, ocenionych książkach
 - POST `/books/user/id:usera/save` - zapisanie książki (to po prostu wystawienie oceny 0)
+
+### III Frontend
+
+Tutaj pewnie Next.js jako że routingiem nie trzeba się tutaj za bardzo męczyć.
+A poza tym chyba wszystko można w Next.js napisać i fajnie się to wdraża.
+
+Strony będą takie:
+
+- Logowanie
+- Rejestracja
+- Strona główna z listą książek
+- Strona dla każdej z książek (z rozróżnieniem czy user ma ocenić czy nie)
+- Profil użytkownika na którym może przeglądać swoje zapisane książki i zmieniać im oceny
+
+Trochę roboty jest :sweat_smile:
