@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import BookService, { BookDetails } from '../services/BookService';
 import AbstractRouter from './AbstractRouter';
-
+import { verifyToken } from '../middlewares';
 export default class BookRouter extends AbstractRouter {
   private bookService = new BookService();
 
@@ -13,13 +13,21 @@ export default class BookRouter extends AbstractRouter {
   public createRouters(): void {
     this.router.get('/', this.getAllBooks);
     this.router.get('/popular', this.getPopularBooks);
-    this.router.get('/highestRated', this.getPopularBooks);
+    this.router.get('/highestRated', this.getHighestRatedBooks);
     this.router.get('/:id', this.getBookById);
-    this.router.get('/user/:username', this.getUserBooks);
-    this.router.get('/user/:username/recommended', this.getRecommendedBooks);
-    this.router.post('/user/:username/rate', this.rateBook);
-    this.router.put('/user/:username/rate', this.changeBookRating);
-    this.router.delete('/user/:username/rate', this.deleteBookRating);
+    this.router.get('/user/:username', verifyToken, this.getUserBooks);
+    this.router.get(
+      '/user/:username/recommended',
+      verifyToken,
+      this.getRecommendedBooks
+    );
+    this.router.post('/user/:username/rate', verifyToken, this.rateBook);
+    this.router.put('/user/:username/rate', verifyToken, this.changeBookRating);
+    this.router.delete(
+      '/user/:username/rate',
+      verifyToken,
+      this.deleteBookRating
+    );
   }
 
   private getAllBooks = async (_: Request, res: Response): Promise<void> => {
@@ -103,6 +111,7 @@ export default class BookRouter extends AbstractRouter {
       res.status(400).send('Cannot change book rating');
     }
   };
+
   private deleteBookRating = async (
     req: Request,
     res: Response
