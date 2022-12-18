@@ -139,6 +139,8 @@ export default class BookService {
       const result = await session.executeRead((tx) => tx.run(query, { ISBN }));
 
       const record = result.records[0];
+      if (!record) throw new Error('Book by given id does not exist');
+
       book = {
         ...record.get('b').properties,
         numOfRatings: record.get('numOfRatings'),

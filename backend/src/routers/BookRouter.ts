@@ -86,6 +86,7 @@ export default class BookRouter extends AbstractRouter {
       res.status(400).send('Cannot get book by given id');
     }
   };
+
   private rateBook = async (req: Request, res: Response): Promise<void> => {
     const { username, ISBN, rating } = req.body;
     const saved = await this.bookService.rateBook(username, ISBN, rating);
