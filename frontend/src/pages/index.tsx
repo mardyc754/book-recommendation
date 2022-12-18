@@ -1,11 +1,21 @@
+import * as React from 'react';
 import Image from 'next/image';
 import { Inter } from '@next/font/google';
 import styles from '../styles/Home.module.css';
 import PageWrapper from '../components/PageWrapper';
+import { BookDetails, getBookById } from '../features/BackendAPI';
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
+  const [bookData, setBookData] = React.useState<BookDetails[]>([]);
+  React.useEffect(() => {
+    (async function getBook() {
+      const bookResponse = await getBookById('0195153448');
+      setBookData([bookResponse.data]);
+    })();
+  }, []);
+
   return (
     <PageWrapper>
       <div>

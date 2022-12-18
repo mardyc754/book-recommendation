@@ -19,6 +19,8 @@ const fetcher = axios.create({
   baseURL: BACKEND_BASE_URL,
   headers: {
     'Content-type': 'application/json'
+    // 'Access-Control-Allow-Credentials': 'true',
+    // 'Access-Control-Allow-Origin': 'http://localhost:8080'
   }
 });
 
