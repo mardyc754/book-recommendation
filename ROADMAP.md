@@ -38,9 +38,5 @@ Komunikacja klient-serwer będzie się odbywać za pomocą REST. Zostaną utworz
 - POST `/books/id:książki/rate` - wysłanie oceny książki
 - PUT `/books/id:książki/rate` - zmiana oceny książki
 - DELETE `/books/id:książki/rate` - usunięcie oceny książki
-- GET `/user?id:użytkownika=x` - wyświetlenie informacji o użytkowniku, jego zapisanych, ocenionych książkach
-- POST `/user/save/id:książki=x` - zapisanie książki
-
-Możliwe, że też:
-
-- GET `/books/id:książki/rating` - średnia ocena książki
+- GET `/books/user/id:usera` - wyświetlenie informacji o użytkowniku, jego zapisanych, ocenionych książkach
+- POST `/books/user/id:usera/save` - zapisanie książki (to po prostu wystawienie oceny 0)

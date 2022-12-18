@@ -11,14 +11,13 @@ require('dotenv').config();
     const driver = neo4j.driver(uri, neo4j.auth.basic(user, password));
 
     try {
-        await loadDataFromCSV();
-        // const person1Name = 'Alice';
-        // const person2Name = 'David';
-
-        // await createFriendship(driver, person1Name, person2Name);
-
-        // await findPerson(driver, person1Name);
-        // await findPerson(driver, person2Name);
+        // await getAllBooks();
+        // await getPopularBooks();
+        // await getUserBooks('LovelyDesigner');
+        // await getBookById('0156027321');
+        // await rateBook('PerkySkylight55', '0195153448', 8);
+        // await changeBookRating('PerkySkylight55', '0195153448', 10);
+        await deleteBookRating('PerkySkylight55', '0195153448');
 
     } catch (error) {
         console.error(`Something went wrong: ${error}`);
@@ -27,59 +26,173 @@ require('dotenv').config();
         await driver.close();
     }
 
-    async function createFriendship (driver, person1Name, person2Name) {
-
-        // To learn more about sessions: https://neo4j.com/docs/javascript-manual/current/session-api/
+    async function getAllBooks() {
         const session = driver.session({ database: 'neo4j' });
-
+        let books = [];
         try {
-            // To learn more about the Cypher syntax, see: https://neo4j.com/docs/cypher-manual/current/
-            // The Reference Card is also a good resource for keywords: https://neo4j.com/docs/cypher-refcard/current/
-            const writeQuery = `MERGE (p1:Person { name: $person1Name })
-                                MERGE (p2:Person { name: $person2Name })
-                                MERGE (p1)-[:KNOWS]->(p2)
-                                RETURN p1, p2`;
+            const query = `MATCH(u:User)-[r:RATED]->(b:Book) return b, count(u) as numOfRatings, 
+            round(avg(r.value), 2) as averageRating`;
 
-            // Write transactions allow the driver to handle retries and transient errors.
-            const writeResult = await session.executeWrite(tx =>
-                tx.run(writeQuery, { person1Name, person2Name })
-            );
+            const result = await session.executeRead((tx) => tx.run(query));
 
-            // Check the write results.
-            writeResult.records.forEach(record => {
-                const person1Node = record.get('p1');
-                const person2Node = record.get('p2');
-                console.info(`Created friendship between: ${person1Node.properties.name}, ${person2Node.properties.name}`);
-            });
+            result.records.forEach((record) => {
+            books.push({ ...record.get('b').properties,          
+            numOfRatings: record.get('numOfRatings'),
+            rating: record.get('averageRating') });
 
-        } catch (error) {
-            console.error(`Something went wrong: ${error}`);
-        } finally {
-            // Close down the session if you're not using it anymore.
-            await session.close();
-        }
-    }
-
-    async function findPerson(driver, personName) {
-
-        const session = driver.session({ database: 'neo4j' });
-
-        try {
-            const readQuery = `MATCH (p:Person)
-                            WHERE p.name = $personName
-                            RETURN p.name AS name`;
-            
-            const readResult = await session.executeRead(tx =>
-                tx.run(readQuery, { personName })
-            );
-
-            readResult.records.forEach(record => {
-                console.log(`Found person: ${record.get('name')}`)
             });
         } catch (error) {
             console.error(`Something went wrong: ${error}`);
         } finally {
             await session.close();
+            console.log(books);
         }
     }
+
+    async function getPopularBooks() {
+        const session = driver.session({ database: 'neo4j' });
+        let books = [];
+        try {
+          const query = `MATCH (u:User)-[r:RATED]->(b:Book) 
+                         return b, count(u) as numOfRatings, 
+                         round(avg(r.value), 2) as averageRating 
+                         ORDER by numOfRatings desc`;
+    
+          const result = await session.executeRead((tx) => tx.run(query));
+    
+          result.records.forEach((record) => {
+            books.push({
+              ...record.get('b').properties,
+              numOfRatings: record.get('numOfRatings'),
+              rating: record.get('averageRating')
+            });
+          });
+        } catch (error) {
+          console.error(`Something went wrong: ${error}`);
+        } finally {
+          await session.close();
+        }
+      }
+
+      async function getUserBooks(username) {
+        const session = driver.session({ database: 'neo4j' });
+        let books = [];
+        try {
+          const query = `MATCH(:User { username: $username })-[:RATED]->(b:Book) return b`;
+    
+          const result = await session.executeRead((tx) =>
+            tx.run(query, { username })
+          );
+    
+          result.records.forEach((record) => {
+            books.push({
+              ...record.get('b').properties
+            });
+          });
+        } catch (error) {
+          console.error(`Something went wrong: ${error}`);
+        } finally {
+          await session.close();
+        //   return books;
+        console.log(books);
+        }
+      }
+
+      async function getBookById(ISBN) {
+        const session = driver.session({ database: 'neo4j' });
+        let book = null;
+        try {
+          const query = `MATCH(u:User)-[r:RATED]->(b:Book { ISBN: $ISBN }) return b, count(u) as numOfRatings, 
+            round(avg(r.value), 2) as averageRating`;
+    
+          const result = await session.executeRead((tx) => tx.run(query, { ISBN }));
+    
+          const record = result.records[0];
+          book = {
+            ...record.get('b').properties,
+            numOfRatings: record.get('numOfRatings'),
+            rating: record.get('averageRating')
+          };
+        } catch (error) {
+          console.error(`Something went wrong: ${error}`);
+        } finally {
+          await session.close();
+          console.log(book);
+          return book;
+        }
+      }
+
+      async function rateBook(username, ISBN, rating) {
+        const session = driver.session({ database: 'neo4j' });
+        try {
+
+            const checkIfRatingExistsQuery = `MATCH(u:User { username: $username })-[r:RATED]->(b:Book {ISBN: $ISBN}) return r`;
+
+            const exisitingRatings = await session.executeRead((tx) =>
+                tx.run(checkIfRatingExistsQuery, { username, ISBN })
+            );
+        
+            if (exisitingRatings.records.length > 0) {
+                throw new Error('You have already rated this book');
+            }
+      
+            const query = `MATCH (u:User {username: $username })
+            MATCH (b:Book {ISBN: $ISBN })
+            CREATE (u)-[r:RATED]->(b)
+            SET r.value = $rating
+            return u, b, r`;
+        
+            const result = await session.executeWrite((tx) =>
+                tx.run(query, { username, ISBN, rating })
+            );
+        
+            const record = result.records[0];
+            const res = {
+                ...record.get('u').properties,
+                ...record.get('r').properties,
+                ...record.get('b').properties
+            };
+            } catch (error) {
+            console.error(`Something went wrong: ${error}`);
+            } finally {
+            await session.close();
+            }
+      }
+
+      async function changeBookRating(
+        username,
+        ISBN,
+        rating
+      ) {
+        const session = driver.session({ database: 'neo4j' });
+        try {
+          const query = `
+          MATCH (u:User {username: $username})-[r:RATED]->(b:Book { ISBN: $ISBN })
+          SET r.value = $rating
+          RETURN r`;
+    
+          await session.executeWrite((tx) =>
+            tx.run(query, { username, ISBN, rating })
+          );
+        } catch (error) {
+          console.error(`Something went wrong: ${error}`);
+        } finally {
+          await session.close();
+        }
+      }
+
+      async function deleteBookRating(username, ISBN) {
+        const session = driver.session({ database: 'neo4j' });
+        try {
+          const query = `
+          MATCH (u:User {username: $username})-[r:RATED]->(b:Book {ISBN: $ISBN})
+          DELETE r`;
+    
+          await session.executeWrite((tx) => tx.run(query, { username, ISBN }));
+        } catch (error) {
+          console.error(`Something went wrong: ${error}`);
+        } finally {
+          await session.close();
+        }
+      }
 })();

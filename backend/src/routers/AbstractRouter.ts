@@ -1,7 +1,20 @@
+import { Router } from 'express';
 export default abstract class AbstractRouter {
-  protected baseURL: string;
+  protected _baseURL: string;
+  protected _router: Router;
 
-  constructor(newBaseURL: string) {
-    this.baseURL = newBaseURL;
+  constructor(baseURL: string) {
+    this._baseURL = baseURL;
+    this._router = Router();
   }
+
+  get baseURL(): string {
+    return this._baseURL;
+  }
+
+  get router(): Router {
+    return this._router;
+  }
+
+  abstract createRouters(): void;
 }
