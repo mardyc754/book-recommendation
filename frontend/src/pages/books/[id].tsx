@@ -1,32 +1,60 @@
-import styles from '../styles/Home.module.css';
-import PageWrapper from '../../components/PageWrapper';
-import {
-  getBookById,
-  getAllBooks,
-  BookDetails
-} from '../../features/BackendAPI';
+// import styles from 'styles/Home.module.css';
+import Link from 'next/link';
+import { Button, Stack, Typography } from '@mui/material';
+import PageWrapper from 'components/PageWrapper/PageWrapper';
+import { getBookById, getAllBooks, BookDetails } from 'features/BackendAPI';
 
-const Book = ({ bookData }: { bookData: BookDetails }) => {
-  console.log(bookData);
+const Book = ({ data }: { data: BookDetails }) => {
+  const {
+    ISBN,
+    year,
+    title,
+    rating,
+    numOfRatings,
+    publisher,
+    imageURL,
+    author
+  } = data;
   return (
     <PageWrapper showLoginButton={false}>
-      <div>
-        <p>Book details</p>
-        <p>ISBN: {bookData.ISBN}</p>
-        <p>Title: {bookData.title}</p>
-        <p>Author: {bookData.author}</p>
-        <p>Year: {bookData.year.low}</p>
-        <p>Publisher: {bookData.publisher}</p>
-        <p>
-          Rating: {bookData.rating} ({bookData.numOfRatings.low})
-        </p>
-        <img
-          src={bookData.imageURL}
-          alt={bookData.title}
-          width={300}
-          height={500}
-        />
-      </div>
+      <Stack>
+        <Stack
+          sx={{ padding: '24px' }}
+          alignItems="center"
+          justifyItems="center"
+        >
+          <h2>Book details</h2>
+        </Stack>
+        <Stack
+          flexDirection="row"
+          sx={{ padding: '40px', paddingBottom: '80px' }}
+        >
+          <Stack>
+            <img src={imageURL} alt={title} width={300} height={450} />
+          </Stack>
+          <Stack sx={{ paddingLeft: '56px' }} display="grid">
+            <Stack>
+              <Typography>Title: {title}</Typography>
+              <Typography>Author: {author}</Typography>
+              <Typography>Year: {year.low}</Typography>
+              <Typography>Publisher: {publisher}</Typography>
+              <Typography>ISBN: {ISBN}</Typography>
+              <Typography>
+                Rating: {rating} ({numOfRatings.low})
+              </Typography>
+              {/* tutaj będzie star rating i możliwość ocenienia */}
+            </Stack>
+            <Stack>
+              <Link href="/">
+                <Button variant="contained" sx={{ textTransform: 'none' }}>
+                  Return to home page
+                </Button>
+              </Link>
+            </Stack>
+          </Stack>
+        </Stack>
+      </Stack>
+      {/* tutaj może książki podobne do oglądanej */}
     </PageWrapper>
   );
 };
@@ -40,8 +68,7 @@ export async function getStaticPaths() {
         bookData: book
       }
     };
-  }); // lista idków książek
-  // console.log(paths.slice(0, 5));
+  });
 
   return {
     paths,
@@ -50,25 +77,11 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: { params: { id: string } }) {
-  // Fetch necessary data for the blog post using params.id
   const { data } = await getBookById(params.id);
-  console.log(data);
-  // const booksData = await (
-  //   await fetch('http://localhost:3000/api/hello')
-  // ).json();
-  // console.log(booksData.response);
-  // const booksData = {
-  //   params: {
-  //     id: '1',
-  //     name: 'test1'
-  //   }
-  // };
-
-  console.log(data);
 
   return {
     props: {
-      bookData: data
+      data
     }
   };
 }

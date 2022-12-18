@@ -32,7 +32,7 @@ export default class BookService {
     let books: BookDetails[] = [];
     try {
       const query = `MATCH(u:User)-[r:RATED]->(b:Book) return b, count(u) as numOfRatings, 
-      round(avg(r.value), 2) as averageRating`;
+      round(avg(r.value), 2) as averageRating LIMIT 20`;
 
       const result = await session.executeRead((tx) => tx.run(query));
 

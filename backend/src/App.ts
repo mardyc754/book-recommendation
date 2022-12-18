@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import cors from 'cors';
 import express, { Express } from 'express';
 import session from 'express-session';
 
@@ -14,6 +15,7 @@ export default class App {
     this.app = express();
     this.app.use(express.urlencoded({ extended: false }));
     this.app.use(express.json());
+    this.app.use(cors());
     this.app.use(
       session({
         secret: 'someverymisterioussecret',

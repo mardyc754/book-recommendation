@@ -2,7 +2,7 @@ import Head from 'next/head';
 import Image from 'next/image';
 import { Inter } from '@next/font/google';
 
-import PageWrapper from '../components/PageWrapper';
+import PageWrapper from '../components/PageWrapper/PageWrapper';
 // import styles from '../styles/Home.module.css';
 
 const inter = Inter({ subsets: ['latin'] });
