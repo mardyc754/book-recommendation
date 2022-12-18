@@ -1,41 +1,48 @@
-import Image from 'next/image';
 import styles from '../styles/Home.module.css';
 import PageWrapper from '../../components/PageWrapper';
+import {
+  getBookById,
+  getAllBooks,
+  BookDetails
+} from '../../features/BackendAPI';
 
-type BookData = {
-  id: string;
-  name: string;
-};
-
-const mockArray = [
-  {
-    params: {
-      id: '1',
-      name: 'test1'
-    }
-  },
-  {
-    params: {
-      id: '2',
-      name: 'test2'
-    }
-  }
-];
-
-const Book = ({ bookData }: { bookData: BookData }) => {
+const Book = ({ bookData }: { bookData: BookDetails }) => {
   console.log(bookData);
   return (
     <PageWrapper showLoginButton={false}>
       <div>
-        <p>{bookData.id}</p>
-        <p>{bookData.name}</p>
+        <p>Book details</p>
+        <p>ISBN: {bookData.ISBN}</p>
+        <p>Title: {bookData.title}</p>
+        <p>Author: {bookData.author}</p>
+        <p>Year: {bookData.year.low}</p>
+        <p>Publisher: {bookData.publisher}</p>
+        <p>
+          Rating: {bookData.rating} ({bookData.numOfRatings.low})
+        </p>
+        <img
+          src={bookData.imageURL}
+          alt={bookData.title}
+          width={300}
+          height={500}
+        />
       </div>
     </PageWrapper>
   );
 };
 
 export async function getStaticPaths() {
-  const paths = mockArray; // lista idków książek
+  const allBooks = await getAllBooks();
+  const paths = allBooks.data.map((book) => {
+    return {
+      params: {
+        id: book.ISBN,
+        bookData: book
+      }
+    };
+  }); // lista idków książek
+  // console.log(paths.slice(0, 5));
+
   return {
     paths,
     fallback: false
@@ -44,7 +51,8 @@ export async function getStaticPaths() {
 
 export async function getStaticProps({ params }: { params: { id: string } }) {
   // Fetch necessary data for the blog post using params.id
-  const bookData = mockArray[parseInt(params.id) - 1].params;
+  const { data } = await getBookById(params.id);
+  console.log(data);
   // const booksData = await (
   //   await fetch('http://localhost:3000/api/hello')
   // ).json();
@@ -56,9 +64,11 @@ export async function getStaticProps({ params }: { params: { id: string } }) {
   //   }
   // };
 
+  console.log(data);
+
   return {
     props: {
-      bookData
+      bookData: data
     }
   };
 }
