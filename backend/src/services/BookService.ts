@@ -15,18 +15,6 @@ export type BookDetails = {
 } & Book;
 
 export default class BookService {
-  // private static instance: BookService | undefined;
-
-  // private constructor() {}
-
-  // public static getInstance(): BookService {
-  //   if (!BookService.instance) {
-  //     BookService.instance = new BookService();
-  //   }
-
-  //   return BookService.instance;
-  // }
-
   public async getAllBooks(): Promise<Book[]> {
     const session = getSession();
     let books: BookDetails[] = [];
@@ -48,6 +36,48 @@ export default class BookService {
     } finally {
       await session.close();
       return books;
+    }
+  }
+
+  public async getBooksForPage(page: number, limit: number): Promise<Book[]> {
+    const session = getSession();
+    let books: BookDetails[] = [];
+    try {
+      const query = `MATCH(u:User)-[r:RATED]->(b:Book) WHERE b.rowNumber > $page AND b.rowNumber < $page+$limit return b, count(u) as numOfRatings, 
+      round(avg(r.value), 2) as averageRating`;
+
+      const result = await session.executeRead((tx) =>
+        tx.run(query, { page, limit })
+      );
+
+      result.records.forEach((record) => {
+        books.push({
+          ...record.get('b').properties,
+          numOfRatings: record.get('numOfRatings'),
+          rating: record.get('averageRating')
+        });
+      });
+    } catch (error) {
+      console.error(`Something went wrong: ${error}`);
+    } finally {
+      await session.close();
+      return books;
+    }
+  }
+
+  public async getNumberOfBooks(): Promise<number> {
+    const session = getSession();
+    let numOfBooks = 0;
+    try {
+      const query = `Match(b:Book) return count(b) as numOfBooks`;
+
+      const result = await session.executeRead((tx) => tx.run(query));
+      numOfBooks = result.records[0].get('numOfBooks').properties.low;
+    } catch (error) {
+      console.error(`Something went wrong: ${error}`);
+    } finally {
+      await session.close();
+      return numOfBooks;
     }
   }
 

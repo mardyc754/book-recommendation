@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Button, Stack, Typography } from '@mui/material';
 import PageWrapper from 'components/PageWrapper/PageWrapper';
 import { getBookById, getAllBooks, BookDetails } from 'features/BackendAPI';
+import StarRating from 'components/StarRating';
 
 const Book = ({ data }: { data: BookDetails }) => {
   const {
@@ -16,7 +17,7 @@ const Book = ({ data }: { data: BookDetails }) => {
     author
   } = data;
   return (
-    <PageWrapper showLoginButton={false}>
+    <PageWrapper>
       <Stack>
         <Stack
           sx={{ padding: '24px' }}
@@ -39,9 +40,11 @@ const Book = ({ data }: { data: BookDetails }) => {
               <Typography>Year: {year.low}</Typography>
               <Typography>Publisher: {publisher}</Typography>
               <Typography>ISBN: {ISBN}</Typography>
+              <StarRating value={rating} iconSize="large" />
               <Typography>
                 Rating: {rating} ({numOfRatings.low})
               </Typography>
+              <Typography>Your rating: 0</Typography>
               {/* tutaj będzie star rating i możliwość ocenienia */}
             </Stack>
             <Stack>

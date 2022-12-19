@@ -1,9 +1,6 @@
 import Image from 'next/image';
-import { Inter } from '@next/font/google';
 import styles from '../styles/Home.module.css';
 import PageWrapper from '../components/PageWrapper/PageWrapper';
-
-const inter = Inter({ subsets: ['latin'] });
 
 const Register = () => {
   return (

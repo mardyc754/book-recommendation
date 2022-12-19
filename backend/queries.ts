@@ -71,3 +71,4 @@ const otherUserRatings = `MATCH (j:User {id: 254})-[:RATED]->(userBook:Book)<-[:
 // usunięcie oceny
 // MATCH (u:User {username: 'Jennifer'})-[r:RATED]->(b:Bok {ISBN: 'qqq'})
 // DELETE r
+const bookFromRange = 'Match(b:Book) return apoc.agg.slice(b, 0, 2)';
