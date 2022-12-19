@@ -1,7 +1,8 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { Stack, Box, Button, Typography } from '@mui/material';
-import { getBookById, getAllBooks, BookDetails } from '../features/BackendAPI';
+import { BookDetails } from 'types';
+import { getBookById, getAllBooks } from 'features/BackendAPI';
 import StarRating from './StarRating';
 
 type BookInfoProps = {

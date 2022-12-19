@@ -1,11 +1,10 @@
 import * as React from 'react';
-import Image from 'next/image';
-// import styles from '../styles/Home.module.css';
 import { Stack, Select, MenuItem } from '@mui/material';
 
 import PageWrapper from '../components/PageWrapper/PageWrapper';
 import BookInfo from 'components/BookInfo';
-import { BookDetails, getBookById, getAllBooks } from '../features/BackendAPI';
+import { getAllBooks } from '../features/BackendAPI';
+import { BookDetails } from 'types';
 
 export default function Home({ books }: { books: BookDetails[] }) {
   return (

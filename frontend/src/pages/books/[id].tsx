@@ -1,8 +1,7 @@
-// import styles from 'styles/Home.module.css';
-import Link from 'next/link';
-import { Button, Stack, Typography } from '@mui/material';
+import { Stack, Typography } from '@mui/material';
+import { BookDetails } from 'types';
 import PageWrapper from 'components/PageWrapper/PageWrapper';
-import { getBookById, getAllBooks, BookDetails } from 'features/BackendAPI';
+import { getBookById, getAllBooks } from 'features/BackendAPI';
 import StarRating from 'components/StarRating';
 
 const Book = ({ data }: { data: BookDetails }) => {
@@ -45,7 +44,6 @@ const Book = ({ data }: { data: BookDetails }) => {
                 Rating: {rating} ({numOfRatings.low})
               </Typography>
               <Typography>Your rating: 0</Typography>
-              {/* tutaj będzie star rating i możliwość ocenienia */}
             </Stack>
           </Stack>
         </Stack>

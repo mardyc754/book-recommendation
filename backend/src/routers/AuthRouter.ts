@@ -19,18 +19,17 @@ export default class AuthRouter extends AbstractRouter {
   }
 
   private register = async (req: Request, res: Response): Promise<void> => {
-    const { username, password, passwordConfirm } = req.body;
+    const { username, password } = req.body;
 
-    if (password !== passwordConfirm) {
-      res.status(400).send({ error: 'Passwords do not match' });
-    }
+    console.log(req.body);
 
     let user = await this.userService.getUserByUsername(username);
 
     if (user !== null) {
       res
         .status(409)
-        .send({ error: 'User with given username already exists' });
+        .send({ message: 'User with given username already exists' });
+      return;
     }
 
     user = await this.userService.createUser(username, password);
