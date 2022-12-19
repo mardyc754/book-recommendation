@@ -4,21 +4,19 @@ import {
   StarOutline as StarOutlineIcon,
   StarHalf as StarHalfIcon
 } from '@mui/icons-material';
-import { Stack, IconButton, IconProps } from '@mui/material';
-
-import { getBookById, getAllBooks, BookDetails } from '../features/BackendAPI';
+import { Stack, IconButton } from '@mui/material';
 
 type StarRatingProps = {
   value: number;
-  userValue?: number;
   numberOfStars?: number;
   iconSize?: 'small' | 'medium' | 'large';
   readOnly?: boolean;
+  bookId: string;
 };
 
 const StarRating = ({
   value,
-  userValue = 0,
+  bookId,
   numberOfStars = 10,
   iconSize = 'medium',
   readOnly
@@ -29,41 +27,40 @@ const StarRating = ({
   const numOfOutlinedStars =
     numberOfStars - numOfContainedStars - numOfHalfStars;
 
-  const stars: JSX.Element[] = [];
+  const stars: (() => JSX.Element)[] = [];
 
   [...Array(numOfContainedStars)].forEach((i) => {
-    stars.push(
+    stars.push(() => (
       <IconButton sx={{ padding: 0 }} disabled={readOnly}>
-        <StarIcon key={`star-${i}`} fontSize={iconSize} />
+        <StarIcon key={`star-${bookId}-${i}`} fontSize={iconSize} />
       </IconButton>
-    );
+    ));
   });
 
   [...Array(numOfHalfStars)].forEach((i) => {
-    stars.push(
+    stars.push(() => (
       <IconButton sx={{ padding: 0 }} disabled={readOnly}>
         <StarHalfIcon
-          key={`star-${i + numOfContainedStars}`}
+          key={`star-${bookId}-${i + numOfContainedStars}`}
           fontSize={iconSize}
         />
       </IconButton>
-    );
+    ));
   });
 
   [...Array(numOfOutlinedStars)].forEach((i) => {
-    stars.push(
+    stars.push(() => (
       <IconButton sx={{ padding: 0 }} disabled={readOnly}>
-        <StarOutlineIcon
-          key={`star-${i + numOfContainedStars + numOfHalfStars}`}
-          fontSize={iconSize}
-        />
+        <StarOutlineIcon fontSize={iconSize} />
       </IconButton>
-    );
+    ));
   });
 
   return (
     <Stack flexDirection="row" padding="8px 0">
-      {stars}
+      {stars.map((Component, i) => {
+        return <Component key={`star-${bookId}-${i}`} />;
+      })}
     </Stack>
   );
 };

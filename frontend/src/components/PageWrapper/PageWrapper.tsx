@@ -4,22 +4,19 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Stack, Box, Button } from '@mui/material';
 import { HeaderButton } from './styles';
-
-// import styles from '../styles/Home.module.css';
+import { useRouter } from 'next/router';
 
 type PageWrapperProps = {
   title?: string;
-  showLoginButton?: boolean;
-  showRegisterButton?: boolean;
   children?: React.ReactNode;
 };
 
 const PageWrapper = ({
-  showLoginButton = true,
-  showRegisterButton = true,
   title = 'Book Recommender',
   children
 }: PageWrapperProps): JSX.Element => {
+  const { pathname } = useRouter();
+
   return (
     <>
       <Head>
@@ -35,7 +32,6 @@ const PageWrapper = ({
           justifyContent="space-between"
           style={{
             padding: '24px',
-            // backgroundColor: '#aaa',
             boxShadow: '0px 5px 5px #ccc'
           }}
         >
@@ -43,13 +39,18 @@ const PageWrapper = ({
             <h1>Book recommender</h1>
           </Box>
           <Stack flexDirection="row">
-            {showLoginButton && (
-              <Link href="login">
+            {pathname !== '/' && (
+              <Link href="/">
+                <HeaderButton variant="contained">Home page</HeaderButton>
+              </Link>
+            )}
+            {pathname !== '/login' && (
+              <Link href="/login">
                 <HeaderButton variant="contained">Log in</HeaderButton>
               </Link>
             )}
-            {showRegisterButton && (
-              <Link href="register">
+            {pathname !== '/register' && (
+              <Link href="/register">
                 <HeaderButton variant="contained">Register</HeaderButton>
               </Link>
             )}

@@ -40,19 +40,12 @@ const Book = ({ data }: { data: BookDetails }) => {
               <Typography>Year: {year.low}</Typography>
               <Typography>Publisher: {publisher}</Typography>
               <Typography>ISBN: {ISBN}</Typography>
-              <StarRating value={rating} iconSize="large" />
+              <StarRating value={rating} bookId={ISBN} iconSize="large" />
               <Typography>
                 Rating: {rating} ({numOfRatings.low})
               </Typography>
               <Typography>Your rating: 0</Typography>
               {/* tutaj będzie star rating i możliwość ocenienia */}
-            </Stack>
-            <Stack>
-              <Link href="/">
-                <Button variant="contained" sx={{ textTransform: 'none' }}>
-                  Return to home page
-                </Button>
-              </Link>
             </Stack>
           </Stack>
         </Stack>
