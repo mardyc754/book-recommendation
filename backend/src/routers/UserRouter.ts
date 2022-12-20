@@ -3,11 +3,11 @@ import UserService from '../services/UserService';
 import AbstractRouter from './AbstractRouter';
 import { verifyToken } from '../middlewares';
 
-export default class BookRouter extends AbstractRouter {
+export default class UserRouter extends AbstractRouter {
   private userService = new UserService();
 
   constructor() {
-    super('/users/');
+    super('/users');
     this.createRouters();
   }
 

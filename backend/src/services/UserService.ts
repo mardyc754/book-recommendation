@@ -1,13 +1,5 @@
 import getSession from '../db';
-
-export type User = {
-  id: string;
-  username: string;
-};
-
-export type AuthUser = {
-  password: string;
-} & User;
+import { User, AuthUser } from '../types';
 
 export default class UserService {
   public async getUserByUsername(username: string): Promise<AuthUser | null> {
@@ -62,7 +54,6 @@ export default class UserService {
     const users: User[] = [];
     try {
       const query = 'MATCH(u:User) RETURN u.id, u.username, u.password';
-
       const result = await session.executeRead((tx) => tx.run(query));
 
       result.records.forEach((record) => {

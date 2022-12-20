@@ -19,7 +19,7 @@ const PageWrapper = ({
   children
 }: PageWrapperProps): JSX.Element => {
   const { pathname } = useRouter();
-  const auth = useAuth();
+  const { user, isLoading } = useAuth();
 
   return (
     <>
@@ -46,24 +46,29 @@ const PageWrapper = ({
           <Box>
             <h1>Book recommender</h1>
           </Box>
-          {!auth.isLoading && (
+          {!isLoading && (
             <Stack flexDirection="row">
               {pathname !== '/' && (
                 <Link href="/">
                   <HeaderButton variant="contained">Home page</HeaderButton>
                 </Link>
               )}
-              {pathname !== '/login' && !auth.user?.id && (
+              {user?.id && (
+                <Link href={`/users/${user?.username}`}>
+                  <HeaderButton variant="contained">Your books</HeaderButton>
+                </Link>
+              )}
+              {pathname !== '/login' && !user?.id && (
                 <Link href="/login">
                   <HeaderButton variant="contained">Log in</HeaderButton>
                 </Link>
               )}
-              {pathname !== '/register' && !auth.user?.id && (
+              {pathname !== '/register' && !user?.id && (
                 <Link href="/register">
                   <HeaderButton variant="contained">Register</HeaderButton>
                 </Link>
               )}
-              {!['/register', '/login'].includes(pathname) && auth.user?.id && (
+              {!['/register', '/login'].includes(pathname) && user?.id && (
                 <HeaderButton variant="contained" onClick={logout}>
                   Log out
                 </HeaderButton>

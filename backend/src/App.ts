@@ -3,7 +3,7 @@ import cors from 'cors';
 import express, { Express } from 'express';
 import session from 'express-session';
 
-import { AbstractRouter, AuthRouter, BookRouter } from './routers';
+import { AbstractRouter, AuthRouter, BookRouter, UserRouter } from './routers';
 import { BookService, UserService } from './services';
 
 export default class App {
@@ -24,7 +24,7 @@ export default class App {
       })
     );
 
-    this.createRouters([new AuthRouter(), new BookRouter()]);
+    this.createRouters([new AuthRouter(), new BookRouter(), new UserRouter()]);
   }
 
   public listen() {

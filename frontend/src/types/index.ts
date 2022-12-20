@@ -10,13 +10,17 @@ export type Book = {
 export type BookDetails = {
   numOfRatings: { low: number; high: number };
   rating: number;
+  userRating?: number;
 } & Book;
 
 export type User = {
   id: number;
   username: string;
-  token: string;
 };
+
+export type AuthUser = {
+  token: string;
+} & User;
 
 export type LoginData = {
   username: string;
@@ -30,4 +34,10 @@ export type RegisterData = {
 export type RegisterResponseData = {
   username: string;
   message: string;
+};
+
+export type Rating = {
+  username: string;
+  ISBN: string;
+  value: number;
 };

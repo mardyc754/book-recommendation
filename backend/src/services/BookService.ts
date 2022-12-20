@@ -1,18 +1,5 @@
 import getSession from '../db';
-
-export type Book = {
-  ISBN: string;
-  title: string;
-  author: string;
-  year: number;
-  publisher: string;
-  imageURL: string;
-};
-
-export type BookDetails = {
-  numOfRatings: number;
-  rating: number;
-} & Book;
+import { Book, BookDetails, Rating } from '../types';
 
 export default class BookService {
   public async getAllBooks(): Promise<Book[]> {
@@ -137,7 +124,12 @@ export default class BookService {
     const session = getSession();
     let books: Book[] = [];
     try {
-      const query = `MATCH(:User { username: $username })-[:RATED]->(b:Book) return b`;
+      const query = `
+      MATCH(u:User)-[r:RATED]->(book:Book) 
+      WITH book as b, count(u) as numOfRatings, 
+      round(avg(r.value), 2) as averageRating
+      MATCH (u:User)-[r:RATED]->(b) WHERE EXISTS((u {username: $username })-[r]->(b)) 
+      RETURN b, numOfRatings, averageRating, r.value as userRating`;
 
       const result = await session.executeRead((tx) =>
         tx.run(query, { username })
@@ -145,7 +137,10 @@ export default class BookService {
 
       result.records.forEach((record) => {
         books.push({
-          ...record.get('b').properties
+          ...record.get('b').properties,
+          numOfRatings: record.get('numOfRatings'),
+          rating: record.get('averageRating'),
+          userRating: record.get('userRating')
         });
       });
     } catch (error) {
@@ -181,6 +176,71 @@ export default class BookService {
       return book;
     }
   }
+
+  public async getBookByIdWithUserRating(
+    ISBN: string,
+    username: string
+  ): Promise<BookDetails | null> {
+    const session = getSession();
+    let book: BookDetails | null = null;
+    try {
+      const query = `MATCH(u:User)-[r:RATED]->(book:Book) WITH book as b, count(u) as numOfRatings, 
+          round(avg(r.value), 2) as averageRating
+          MATCH (u:User)-[r:RATED]->(b) WHERE EXISTS((u {username: $username})-[r]->(b {ISBN: $ISBN})) 
+          RETURN b, numOfRatings, averageRating, r.value as userRating`;
+
+      const result = await session.executeRead((tx) =>
+        tx.run(query, { username, ISBN })
+      );
+
+      const record = result.records[0];
+      book = {
+        ...record.get('b').properties,
+        numOfRatings: record.get('numOfRatings'),
+        rating: record.get('averageRating'),
+        userRating: record.get('userRating')
+      };
+    } catch (error) {
+      console.error(`Something went wrong: ${error}`);
+    } finally {
+      await session.close();
+      return book;
+    }
+  }
+
+  public async getBookUserRating(
+    ISBN: string,
+    username: string
+  ): Promise<Rating | null> {
+    const session = getSession();
+    let rating: Rating | null = null;
+    try {
+      const query = `MATCH(u:User { username: $username })-[r:RATED]->(b:Book {ISBN: $ISBN }) return r.value as userRating, b.ISBN, u.username`;
+
+      const result = await session.executeRead((tx) =>
+        tx.run(query, { username, ISBN })
+      );
+
+      const record = result.records[0];
+      rating = record
+        ? {
+            value: record.get('userRating'),
+            ISBN: record.get('b.ISBN'),
+            username: record.get('u.username')
+          }
+        : {
+            value: 0,
+            ISBN,
+            username
+          };
+    } catch (error) {
+      console.error(`Something went wrong: ${error}`);
+    } finally {
+      await session.close();
+      return rating;
+    }
+  }
+
   public async rateBook(
     username: string,
     ISBN: string,

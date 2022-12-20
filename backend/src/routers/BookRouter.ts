@@ -1,7 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
-import BookService, { BookDetails } from '../services/BookService';
+import BookService from '../services/BookService';
 import AbstractRouter from './AbstractRouter';
 import { verifyToken } from '../middlewares';
+import { BookDetails } from '../types';
 export default class BookRouter extends AbstractRouter {
   private bookService = new BookService();
 
@@ -15,6 +16,7 @@ export default class BookRouter extends AbstractRouter {
     this.router.get('/popular', this.getPopularBooks);
     this.router.get('/highestRated', this.getHighestRatedBooks);
     this.router.get('/:id', this.getBookById);
+    this.router.get('/:id/:username/rating', this.getBookUserRating);
     this.router.get('/user/:username', verifyToken, this.getUserBooks);
     this.router.get(
       '/user/:username/recommended',
@@ -73,13 +75,31 @@ export default class BookRouter extends AbstractRouter {
     }
   };
 
+  private getBookUserRating = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    const { username, id } = req.params;
+    const rating = await this.bookService.getBookUserRating(id, username);
+    if (rating !== null) {
+      res.status(200).send(rating);
+    } else {
+      res.status(400).send('Cannot get user rating');
+    }
+  };
+
   // TODO: najważniejszy endpoint w programie
   // od niego zależy czy skończę te studia lub nie
   private getRecommendedBooks = async (): Promise<void> => {};
 
   private getBookById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
-    const book = await this.bookService.getBookById(id);
+    const username = req.query.username as string | undefined;
+
+    const book = username
+      ? await this.bookService.getBookByIdWithUserRating(id, username)
+      : await this.bookService.getBookById(id);
+
     if (book !== null) {
       res.status(200).send(book);
     } else {

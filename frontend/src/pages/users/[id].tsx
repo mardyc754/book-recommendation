@@ -1,52 +1,29 @@
-import * as React from 'react';
 import { Stack, Typography } from '@mui/material';
-import { BookDetails, Rating } from 'types';
 
 import useAuth from 'hooks/useAuth';
+import { getAllUsers, getUserByUsername } from 'features/BackendAPI';
+
 import PageWrapper from 'components/PageWrapper/PageWrapper';
-import {
-  getBookById,
-  getAllBooks,
-  getBookUserRating
-} from 'features/BackendAPI';
+import PageHeader from 'components/PageHeader';
 import StarRating from 'components/StarRating';
+import BookInfo from 'components/BookInfo';
 
-const Book = ({ data }: { data: BookDetails }) => {
-  const [userRating, setUserRating] = React.useState<Rating | null>(null);
+import { User } from 'types';
 
-  const {
-    ISBN,
-    year,
-    title,
-    rating,
-    numOfRatings,
-    publisher,
-    imageURL,
-    author
-  } = data;
-
+const UserPage = ({ data }: { data: User }) => {
   const { user } = useAuth();
+  const { username } = data;
+  const isCurrentUserPage = user && user.username === username;
 
-  React.useEffect(() => {
-    if (user) {
-      (async function getUserRating() {
-        const response = await getBookUserRating(ISBN, user.username);
-        setUserRating(response.data);
-      })();
-    }
-  }, [user]);
+  const pageTitle = isCurrentUserPage
+    ? 'Books rated by you'
+    : `Books rated by ${username}`;
 
   return (
     <PageWrapper>
-      <Stack>
-        <Stack
-          sx={{ padding: '24px' }}
-          alignItems="center"
-          justifyItems="center"
-        >
-          <h2>Book details</h2>
-        </Stack>
-        <Stack
+      <PageHeader title={pageTitle} />
+
+      {/* <Stack
           flexDirection="row"
           sx={{ padding: '40px', paddingBottom: '80px' }}
         >
@@ -60,27 +37,28 @@ const Book = ({ data }: { data: BookDetails }) => {
               <Typography>Year: {year.low}</Typography>
               <Typography>Publisher: {publisher}</Typography>
               <Typography>ISBN: {ISBN}</Typography>
-              <StarRating value={rating} bookId={ISBN} iconSize="large" />
+              <StarRating value={rating} UserPageId={ISBN} iconSize="large" />
               <Typography>
                 Rating: {rating} ({numOfRatings.low})
               </Typography>
-              <Typography>Your rating: {userRating?.value}</Typography>
+              <Typography>Your rating: 0</Typography>
             </Stack>
           </Stack>
         </Stack>
-      </Stack>
+      </Stack> */}
       {/* tutaj może książki podobne do oglądanej */}
     </PageWrapper>
   );
 };
 
 export async function getStaticPaths() {
-  const allBooks = await getAllBooks();
-  const paths = allBooks.data.map((book) => {
+  const allUserPages = await getAllUsers();
+
+  const paths = allUserPages.data.map((UserPage) => {
     return {
       params: {
-        id: book.ISBN,
-        bookData: book
+        id: UserPage.username,
+        UserPageData: UserPage
       }
     };
   });
@@ -92,13 +70,13 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: { params: { id: string } }) {
-  const { data } = await getBookById(params.id);
+  const user = await getUserByUsername(params.id);
 
   return {
     props: {
-      data
+      data: user.data
     }
   };
 }
 
-export default Book;
+export default UserPage;

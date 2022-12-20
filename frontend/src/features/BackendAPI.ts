@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from 'axios';
 import Cookies from 'universal-cookie';
+import { BookDetails, User, RegisterResponseData, Rating } from 'types';
 
 const BACKEND_BASE_URL = 'http://localhost:8080/';
-import { BookDetails, User, RegisterResponseData } from 'types';
 
 export const cookies = new Cookies();
 
@@ -50,6 +50,29 @@ export const getCurrentUser = (): User | undefined => {
   if (!userString) return;
 
   return JSON.parse(userString);
+};
+
+export const getAllUsers = async (): Promise<AxiosResponse<User[]>> => {
+  return await fetcher.get('/users');
+};
+
+export const getUserByUsername = async (
+  username: string
+): Promise<AxiosResponse<User>> => {
+  return await fetcher.get(`/users/${username}`);
+};
+
+export const getUserBooks = async (
+  username: string
+): Promise<AxiosResponse<User>> => {
+  return await fetcher.get(`/books/users/${username}`);
+};
+
+export const getBookUserRating = async (
+  ISBN: string,
+  username: string
+): Promise<AxiosResponse<Rating>> => {
+  return await fetcher.get(`/books/${ISBN}/${username}/rating`);
 };
 
 // export const getCurrentUser = async (): Promise<void> => {
