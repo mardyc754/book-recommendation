@@ -3,18 +3,20 @@ import jwt from 'jsonwebtoken';
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const token =
-    req.body.token || req.query.token || req.headers['x-access-token'];
+    req.body.token || req.cookies.token || req.headers['x-access-token'];
 
   if (!token) {
-    return res.status(403).send('A token is required for authentication');
+    return res
+      .status(403)
+      .send({ message: 'A token is required for authentication' });
   }
   try {
     const decoded = jwt.verify(token, process.env.TOKEN_KEY as string);
     if (decoded) {
-      return res.status(200).send('Successfully Verified');
+      return res.status(200).send({ message: 'Successfully Verified' });
     }
   } catch (err) {
-    return res.status(401).send('Invalid Token');
+    return res.status(401).send({ message: 'Invalid Token' });
   }
   return next();
 };

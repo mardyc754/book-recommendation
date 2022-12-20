@@ -45,7 +45,6 @@ require('dotenv').config();
             console.error(`Something went wrong: ${error}`);
         } finally {
             await session.close();
-            console.log(books);
         }
     }
 
@@ -94,7 +93,6 @@ require('dotenv').config();
         } finally {
           await session.close();
         //   return books;
-        console.log(books);
         }
       }
 
@@ -117,7 +115,6 @@ require('dotenv').config();
           console.error(`Something went wrong: ${error}`);
         } finally {
           await session.close();
-          console.log(book);
           return book;
         }
       }

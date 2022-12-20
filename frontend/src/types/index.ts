@@ -15,5 +15,19 @@ export type BookDetails = {
 export type User = {
   id: number;
   username: string;
+  token: string;
+};
+
+export type LoginData = {
+  username: string;
   password: string;
+};
+
+export type RegisterData = {
+  passwordConfirm: string;
+} & LoginData;
+
+export type RegisterResponseData = {
+  username: string;
+  message: string;
 };

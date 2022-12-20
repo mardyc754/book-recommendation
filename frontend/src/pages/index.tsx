@@ -53,6 +53,7 @@ export default function Home({ books }: { books: BookDetails[] }) {
 
 export async function getStaticProps() {
   const res = await getAllBooks();
+
   const books = res.data;
 
   return {

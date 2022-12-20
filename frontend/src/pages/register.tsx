@@ -1,9 +1,9 @@
 import * as Yup from 'yup';
 import { Grid, Button, TextField, Stack } from '@mui/material';
 import { useFormik } from 'formik';
+import { handleRegisterSubmit } from 'features/formHandlers';
 import PageWrapper from '../components/PageWrapper/PageWrapper';
 import PageHeader from 'components/PageHeader';
-import { createUser } from 'features/BackendAPI';
 
 const validationSchema = Yup.object({
   username: Yup.string()
@@ -28,22 +28,7 @@ const Register = () => {
       passwordConfirm: ''
     },
     validationSchema,
-    onSubmit: async (values) => {
-      console.log(values);
-      const { username, password, passwordConfirm } = values;
-      if (password !== passwordConfirm) {
-        alert('Passwords do not match');
-        return;
-      }
-
-      await createUser(username, password)
-        .then((res) => {
-          alert(`User account for ${res.data.username} created successfully`);
-        })
-        .catch((err) => {
-          alert(err.response.data.message);
-        });
-    }
+    onSubmit: handleRegisterSubmit
   });
 
   return (

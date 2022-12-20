@@ -3,8 +3,11 @@ import Head from 'next/head';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Stack, Box, Button } from '@mui/material';
+import { User } from 'types';
 import { HeaderButton } from './styles';
 import { useRouter } from 'next/router';
+import useAuth from 'hooks/useAuth';
+import { getCurrentUser, logout } from 'features/BackendAPI';
 
 type PageWrapperProps = {
   title?: string;
@@ -16,6 +19,7 @@ const PageWrapper = ({
   children
 }: PageWrapperProps): JSX.Element => {
   const { pathname } = useRouter();
+  const auth = useAuth();
 
   return (
     <>
@@ -31,30 +35,41 @@ const PageWrapper = ({
           flexDirection="row"
           justifyContent="space-between"
           style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
             padding: '24px',
-            boxShadow: '0px 5px 5px #ccc'
+            boxShadow: '0px 5px 5px #ccc',
+            backgroundColor: '#fff'
           }}
         >
           <Box>
             <h1>Book recommender</h1>
           </Box>
-          <Stack flexDirection="row">
-            {pathname !== '/' && (
-              <Link href="/">
-                <HeaderButton variant="contained">Home page</HeaderButton>
-              </Link>
-            )}
-            {pathname !== '/login' && (
-              <Link href="/login">
-                <HeaderButton variant="contained">Log in</HeaderButton>
-              </Link>
-            )}
-            {pathname !== '/register' && (
-              <Link href="/register">
-                <HeaderButton variant="contained">Register</HeaderButton>
-              </Link>
-            )}
-          </Stack>
+          {!auth.isLoading && (
+            <Stack flexDirection="row">
+              {pathname !== '/' && (
+                <Link href="/">
+                  <HeaderButton variant="contained">Home page</HeaderButton>
+                </Link>
+              )}
+              {pathname !== '/login' && !auth.user?.id && (
+                <Link href="/login">
+                  <HeaderButton variant="contained">Log in</HeaderButton>
+                </Link>
+              )}
+              {pathname !== '/register' && !auth.user?.id && (
+                <Link href="/register">
+                  <HeaderButton variant="contained">Register</HeaderButton>
+                </Link>
+              )}
+              {!['/register', '/login'].includes(pathname) && auth.user?.id && (
+                <HeaderButton variant="contained" onClick={logout}>
+                  Log out
+                </HeaderButton>
+              )}
+            </Stack>
+          )}
         </Stack>
         <Stack component="main" flex="1">
           {children}
