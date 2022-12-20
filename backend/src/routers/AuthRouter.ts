@@ -16,12 +16,11 @@ export default class AuthRouter extends AbstractRouter {
     this.router.post('/register', this.register);
     this.router.post('/login', this.login);
     this.router.post('/logout', this.logout);
+    // this.router.get('/user', verifyToken, this.getCurrentUser);
   }
 
   private register = async (req: Request, res: Response): Promise<void> => {
     const { username, password } = req.body;
-
-    console.log(req.body);
 
     let user = await this.userService.getUserByUsername(username);
 
@@ -35,7 +34,9 @@ export default class AuthRouter extends AbstractRouter {
     user = await this.userService.createUser(username, password);
     // const hashedPassword = await bcrypt.hash(password, 8);
     // user = await this.userService.createUser(username, hashedPassword)
-    res.status(201).send({ user, message: 'User created succesfully' });
+    res
+      .status(201)
+      .send({ username: user?.username, message: 'User created succesfully' });
   };
 
   private login = async (req: Request, res: Response): Promise<void> => {
@@ -48,14 +49,13 @@ export default class AuthRouter extends AbstractRouter {
       });
     }
 
-    // // przeszukiwanie w grafowej bazie czy użytkownik istnieje
-    // zwracany response
     const user = await this.userService.getUserByUsername(username);
 
     if (user === null) {
-      res.status(400).send({ error: 'Wrong credentials' });
+      res.status(400).send({ message: 'Wrong credentials' });
+      return;
     }
-    // // utworzenie tokenu i wysłanie go do frontendu
+
     const token = jwt.sign(
       { username, password },
       process.env.TOKEN_KEY as string,
@@ -64,22 +64,18 @@ export default class AuthRouter extends AbstractRouter {
       }
     );
 
-    // const cookieOptions = {
-    //   expires: new Date(Date.now() + 120000 * 24 * 60 * 60 * 1000),
-    //   httpOnly: true
-    // };
-
-    res.cookie('jwt', token);
-    res
-      .status(200)
-      .send({ token, message: 'Logged in', isAuthenticated: true });
+    // res.cookie('jwt', token);
+    res.status(200).send({
+      token,
+      message: 'Logged in',
+      isAuthenticated: true,
+      username: user.username,
+      id: user.id
+    });
   };
 
   private logout = (req: Request, res: Response): void => {
-    if (!req.cookies.get('jwt')) {
-      res.status(405).send({ error: 'User not logged in' });
-    }
-    res.clearCookie('jwt');
+    // res.clearCookie('jwt');
     res.status(200).send({ message: 'Logged out', isAuthenticated: false });
   };
 }

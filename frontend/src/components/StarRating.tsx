@@ -29,26 +29,23 @@ const StarRating = ({
 
   const stars: (() => JSX.Element)[] = [];
 
-  [...Array(numOfContainedStars)].forEach((i) => {
+  [...Array(numOfContainedStars)].forEach(() => {
     stars.push(() => (
       <IconButton sx={{ padding: 0 }} disabled={readOnly}>
-        <StarIcon key={`star-${bookId}-${i}`} fontSize={iconSize} />
+        <StarIcon fontSize={iconSize} />
       </IconButton>
     ));
   });
 
-  [...Array(numOfHalfStars)].forEach((i) => {
+  [...Array(numOfHalfStars)].forEach(() => {
     stars.push(() => (
       <IconButton sx={{ padding: 0 }} disabled={readOnly}>
-        <StarHalfIcon
-          key={`star-${bookId}-${i + numOfContainedStars}`}
-          fontSize={iconSize}
-        />
+        <StarHalfIcon fontSize={iconSize} />
       </IconButton>
     ));
   });
 
-  [...Array(numOfOutlinedStars)].forEach((i) => {
+  [...Array(numOfOutlinedStars)].forEach(() => {
     stars.push(() => (
       <IconButton sx={{ padding: 0 }} disabled={readOnly}>
         <StarOutlineIcon fontSize={iconSize} />
