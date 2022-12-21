@@ -1,18 +1,26 @@
-import { Stack, Typography } from '@mui/material';
-
+import { Stack, Typography, CircularProgress } from '@mui/material';
+import { useQuery } from 'react-query';
 import useAuth from 'hooks/useAuth';
-import { getAllUsers, getUserByUsername } from 'features/BackendAPI';
+import {
+  getAllUsers,
+  getUserByUsername,
+  getUserBooks
+} from 'features/BackendAPI';
 
 import PageWrapper from 'components/PageWrapper/PageWrapper';
 import PageHeader from 'components/PageHeader';
 import StarRating from 'components/StarRating';
 import BookInfo from 'components/BookInfo';
 
-import { User } from 'types';
+import { BookDetails, User } from 'types';
 
-const UserPage = ({ data }: { data: User }) => {
+const UserPage = ({ username, id }: User) => {
   const { user } = useAuth();
-  const { username } = data;
+  const { isLoading, isError, data, error } = useQuery<BookDetails[]>(
+    'userBooks',
+    () => getUserBooks(username)
+  );
+
   const isCurrentUserPage = user && user.username === username;
 
   const pageTitle = isCurrentUserPage
@@ -22,7 +30,24 @@ const UserPage = ({ data }: { data: User }) => {
   return (
     <PageWrapper>
       <PageHeader title={pageTitle} />
-
+      <Stack
+        alignItems="center"
+        justifyItems="center"
+        sx={{ marginBottom: '32px' }}
+      >
+        {!isLoading ? (
+          data?.map((bookProps) => {
+            return (
+              <BookInfo
+                key={`BookInfo-rated-${bookProps.ISBN}`}
+                data={bookProps}
+              />
+            );
+          })
+        ) : (
+          <CircularProgress />
+        )}
+      </Stack>
       {/* <Stack
           flexDirection="row"
           sx={{ padding: '40px', paddingBottom: '80px' }}
@@ -74,7 +99,8 @@ export async function getStaticProps({ params }: { params: { id: string } }) {
 
   return {
     props: {
-      data: user.data
+      username: user.data.username,
+      id: user.data.id
     }
   };
 }

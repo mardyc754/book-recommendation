@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { Stack, Typography } from '@mui/material';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { Stack, Typography, CircularProgress } from '@mui/material';
 import { BookDetails, Rating } from 'types';
 
 import useAuth from 'hooks/useAuth';
@@ -7,13 +8,12 @@ import PageWrapper from 'components/PageWrapper/PageWrapper';
 import {
   getBookById,
   getAllBooks,
-  getBookUserRating
+  getBookUserRating,
+  rateBook
 } from 'features/BackendAPI';
 import StarRating from 'components/StarRating';
 
-const Book = ({ data }: { data: BookDetails }) => {
-  const [userRating, setUserRating] = React.useState<Rating | null>(null);
-
+const Book = ({ bookData }: { bookData: BookDetails }) => {
   const {
     ISBN,
     year,
@@ -23,18 +23,38 @@ const Book = ({ data }: { data: BookDetails }) => {
     publisher,
     imageURL,
     author
-  } = data;
+  } = bookData;
 
+  const queryClient = useQueryClient();
   const { user } = useAuth();
 
-  React.useEffect(() => {
-    if (user) {
-      (async function getUserRating() {
-        const response = await getBookUserRating(ISBN, user.username);
-        setUserRating(response.data);
-      })();
+  const bookQuery = useQuery('book', () => getBookById(ISBN));
+  console.log(bookQuery.data);
+  const userRatingQuery = useQuery('userRating', () =>
+    getBookUserRating(ISBN, user?.username)
+  );
+
+  const changeRatingMutation = useMutation(
+    (newRating: Rating): Promise<void> =>
+      rateBook(
+        newRating.ISBN,
+        newRating.username,
+        newRating.value,
+        user?.token
+      ),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries(['userRating', 'book']);
+      }
     }
-  }, [user]);
+  );
+  // const [userRating, setUserRating] = React.useState(
+  //   userRatingQuery.data?.value
+  // );
+
+  // const onChangeUserRating = (newRating: number): void => {
+  //   setUserRating(newRating);
+  // };
 
   return (
     <PageWrapper>
@@ -60,11 +80,26 @@ const Book = ({ data }: { data: BookDetails }) => {
               <Typography>Year: {year.low}</Typography>
               <Typography>Publisher: {publisher}</Typography>
               <Typography>ISBN: {ISBN}</Typography>
-              <StarRating value={rating} bookId={ISBN} iconSize="large" />
+              <StarRating
+                value={bookQuery.data?.rating ?? 0}
+                bookId={ISBN}
+                iconSize="large"
+                onChangeUserRating={(newValue: number) => {
+                  user &&
+                    changeRatingMutation.mutate({
+                      username: user?.username,
+                      ISBN,
+                      value: newValue
+                    });
+                }}
+              />
               <Typography>
-                Rating: {rating} ({numOfRatings.low})
+                Rating: {bookQuery.data?.rating} ({numOfRatings.low})
               </Typography>
-              <Typography>Your rating: {userRating?.value}</Typography>
+              {userRatingQuery.isLoading && <CircularProgress />}
+              <Typography>
+                Your rating: {userRatingQuery.data?.value ?? 'No rating'}
+              </Typography>
             </Stack>
           </Stack>
         </Stack>
@@ -79,12 +114,10 @@ export async function getStaticPaths() {
   const paths = allBooks.data.map((book) => {
     return {
       params: {
-        id: book.ISBN,
-        bookData: book
+        id: book.ISBN
       }
     };
   });
-
   return {
     paths,
     fallback: false
@@ -92,11 +125,10 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: { params: { id: string } }) {
-  const { data } = await getBookById(params.id);
-
+  const bookData = await getBookById(params.id);
   return {
     props: {
-      data
+      bookData
     }
   };
 }

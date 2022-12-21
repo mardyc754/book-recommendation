@@ -12,6 +12,7 @@ type StarRatingProps = {
   iconSize?: 'small' | 'medium' | 'large';
   readOnly?: boolean;
   bookId: string;
+  onChangeUserRating?: (newRating: number) => void;
 };
 
 const StarRating = ({
@@ -19,7 +20,8 @@ const StarRating = ({
   bookId,
   numberOfStars = 10,
   iconSize = 'medium',
-  readOnly
+  readOnly,
+  onChangeUserRating
 }: StarRatingProps): JSX.Element => {
   const ratingFraction = value - Math.floor(value);
   const numOfContainedStars = Math.floor(value);
@@ -29,25 +31,44 @@ const StarRating = ({
 
   const stars: (() => JSX.Element)[] = [];
 
-  [...Array(numOfContainedStars)].forEach(() => {
+  const changeUserRating = (newValue: number): void => {
+    onChangeUserRating && onChangeUserRating(newValue);
+    console.log(value);
+  };
+
+  [...Array(numOfContainedStars)].forEach((_, i) => {
     stars.push(() => (
-      <IconButton sx={{ padding: 0 }} disabled={readOnly}>
+      <IconButton
+        sx={{ padding: 0 }}
+        disabled={readOnly}
+        onClick={() => changeUserRating(i + 1)}
+      >
         <StarIcon fontSize={iconSize} />
       </IconButton>
     ));
   });
 
-  [...Array(numOfHalfStars)].forEach(() => {
+  [...Array(numOfHalfStars)].forEach((_, i) => {
     stars.push(() => (
-      <IconButton sx={{ padding: 0 }} disabled={readOnly}>
+      <IconButton
+        sx={{ padding: 0 }}
+        disabled={readOnly}
+        onClick={() => changeUserRating(i + numOfContainedStars + 1)}
+      >
         <StarHalfIcon fontSize={iconSize} />
       </IconButton>
     ));
   });
 
-  [...Array(numOfOutlinedStars)].forEach(() => {
+  [...Array(numOfOutlinedStars)].forEach((_, i) => {
     stars.push(() => (
-      <IconButton sx={{ padding: 0 }} disabled={readOnly}>
+      <IconButton
+        sx={{ padding: 0 }}
+        disabled={readOnly}
+        onClick={() =>
+          changeUserRating(i + numOfContainedStars + numOfHalfStars + 1)
+        }
+      >
         <StarOutlineIcon fontSize={iconSize} />
       </IconButton>
     ));

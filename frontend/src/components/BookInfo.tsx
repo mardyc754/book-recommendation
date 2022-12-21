@@ -1,5 +1,5 @@
 import * as React from 'react';
-import Link from 'next/link';
+// import Link from 'next/link';
 import { Stack, Box, Button, Typography } from '@mui/material';
 import { BookDetails } from 'types';
 import { getBookById, getAllBooks } from 'features/BackendAPI';
@@ -46,7 +46,7 @@ const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
         </Stack>
         <Stack sx={{ padding: '32px' }}>
           <Button variant="contained" sx={{ textTransform: 'none' }}>
-            <Link href={`/books/${ISBN}`}>Details</Link>
+            <a href={`/books/${ISBN}`}>Details</a>
           </Button>
         </Stack>
       </Stack>

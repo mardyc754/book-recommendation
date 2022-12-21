@@ -17,14 +17,14 @@ export default class BookRouter extends AbstractRouter {
     this.router.get('/highestRated', this.getHighestRatedBooks);
     this.router.get('/:id', this.getBookById);
     this.router.get('/:id/:username/rating', this.getBookUserRating);
-    this.router.get('/user/:username', verifyToken, this.getUserBooks);
+    this.router.get('/user/:username', this.getUserBooks);
     this.router.get(
       '/user/:username/recommended',
       verifyToken,
       this.getRecommendedBooks
     );
     this.router.post('/user/:username/rate', verifyToken, this.rateBook);
-    this.router.put('/user/:username/rate', verifyToken, this.changeBookRating);
+    // this.router.put('/user/:username/rate', verifyToken, this.changeBookRating);
     this.router.delete(
       '/user/:username/rate',
       verifyToken,
@@ -107,30 +107,30 @@ export default class BookRouter extends AbstractRouter {
     }
   };
   private rateBook = async (req: Request, res: Response): Promise<void> => {
-    const { username, ISBN, rating } = req.body;
-    const saved = await this.bookService.rateBook(username, ISBN, rating);
+    const { username, ISBN, value } = req.body;
+    const saved = await this.bookService.rateBook(username, ISBN, value);
     if (saved) {
       res.status(200).send();
     } else {
       res.status(400).send('Cannot get book by given id');
     }
   };
-  private changeBookRating = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    const { username, ISBN, rating } = req.body;
-    const saved = await this.bookService.changeBookRating(
-      username,
-      ISBN,
-      rating
-    );
-    if (saved) {
-      res.status(200).send();
-    } else {
-      res.status(400).send('Cannot change book rating');
-    }
-  };
+  // private changeBookRating = async (
+  //   req: Request,
+  //   res: Response
+  // ): Promise<void> => {
+  //   const { username, ISBN, rating } = req.body;
+  //   const saved = await this.bookService.changeBookRating(
+  //     username,
+  //     ISBN,
+  //     rating
+  //   );
+  //   if (saved) {
+  //     res.status(200).send();
+  //   } else {
+  //     res.status(400).send('Cannot change book rating');
+  //   }
+  // };
 
   private deleteBookRating = async (
     req: Request,

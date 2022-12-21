@@ -7,7 +7,7 @@ export default class BookService {
     let books: BookDetails[] = [];
     try {
       const query = `MATCH(u:User)-[r:RATED]->(b:Book) return b, count(u) as numOfRatings, 
-      round(avg(r.value), 2) as averageRating LIMIT 20`;
+      round(avg(r.value), 2) as averageRating`;
 
       const result = await session.executeRead((tx) => tx.run(query));
 
@@ -229,7 +229,7 @@ export default class BookService {
             username: record.get('u.username')
           }
         : {
-            value: 0,
+            value: null,
             ISBN,
             username
           };
@@ -244,7 +244,7 @@ export default class BookService {
   public async rateBook(
     username: string,
     ISBN: string,
-    rating: number
+    value: number
   ): Promise<boolean> {
     const session = getSession();
     let saved = false;
@@ -255,45 +255,28 @@ export default class BookService {
         tx.run(checkIfRatingExistsQuery, { username, ISBN })
       );
 
-      if (exisitingRatings.records.length > 0) {
-        throw new Error('You have already rated this book');
-      }
-
-      const query = `MATCH (u:User {username: $username })
-      MATCH (b:Book {ISBN: $ISBN })
-      CREATE (u)-[r:RATED]->(b)
-      SET r.value = $rating
-      return u, b, r`;
-
-      await session.executeWrite((tx) =>
-        tx.run(query, { username, ISBN, rating })
-      );
-      saved = true;
-    } catch (error) {
-      console.error(`Something went wrong: ${error}`);
-    } finally {
-      await session.close();
-      return saved;
-    }
-  }
-
-  public async changeBookRating(
-    username: string,
-    ISBN: string,
-    rating: number
-  ): Promise<boolean> {
-    const session = getSession();
-    let saved = false;
-    try {
-      const query = `
+      console.log({ username, ISBN, value });
+      // zmień ocenę
+      let query = `
       MATCH (u:User {username: $username})-[r:RATED]->(b:Book { ISBN: $ISBN })
-      SET r.value = $rating
+      SET r.value = $value
       RETURN r`;
 
-      await session.executeWrite((tx) =>
-        tx.run(query, { username, ISBN, rating })
-      );
-      saved = true;
+      console.log(exisitingRatings.records.length);
+      // utwórz nową
+      if (exisitingRatings.records.length === 0) {
+        query = `MATCH (u:User {username: $username })
+        MATCH (b:Book {ISBN: $ISBN })
+        CREATE (u)-[r:RATED]->(b)
+        SET r.value = $value
+        return u, b, r`;
+      }
+
+      await session
+        .executeWrite((tx) => tx.run(query, { username, ISBN, value }))
+        .then(() => {
+          saved = true;
+        });
     } catch (error) {
       console.error(`Something went wrong: ${error}`);
     } finally {
@@ -301,6 +284,31 @@ export default class BookService {
       return saved;
     }
   }
+
+  // public async changeBookRating(
+  //   username: string,
+  //   ISBN: string,
+  //   rating: number
+  // ): Promise<boolean> {
+  //   const session = getSession();
+  //   let saved = false;
+  //   try {
+  //     const query = `
+  //     MATCH (u:User {username: $username})-[r:RATED]->(b:Book { ISBN: $ISBN })
+  //     SET r.value = $rating
+  //     RETURN r`;
+
+  //     await session.executeWrite((tx) =>
+  //       tx.run(query, { username, ISBN, rating })
+  //     );
+  //     saved = true;
+  //   } catch (error) {
+  //     console.error(`Something went wrong: ${error}`);
+  //   } finally {
+  //     await session.close();
+  //     return saved;
+  //   }
+  // }
 
   public async deleteBookRating(
     username: string,

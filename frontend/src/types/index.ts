@@ -39,5 +39,5 @@ export type RegisterResponseData = {
 export type Rating = {
   username: string;
   ISBN: string;
-  value: number;
+  value: number | null;
 };

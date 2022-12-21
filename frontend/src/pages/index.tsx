@@ -54,7 +54,7 @@ export default function Home({ books }: { books: BookDetails[] }) {
 export async function getStaticProps() {
   const res = await getAllBooks();
 
-  const books = res.data;
+  const books = res.data.slice(0, 20);
 
   return {
     props: {
