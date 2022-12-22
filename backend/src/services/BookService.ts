@@ -165,8 +165,9 @@ export default class BookService {
       result.records.forEach((record) => {
         books.push({
           ...record.get('b').properties,
-          numOfRatings: record.get('numOfRatings'),
-          rating: record.get('averageRating')
+          numOfRatings:
+            record.get('numOfRatings').low ?? record.get('numOfRatings'),
+          rating: record.get('averageRating').low ?? record.get('averageRating')
         });
       });
     } catch (error) {
