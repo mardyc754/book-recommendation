@@ -1,6 +1,12 @@
 import axios, { AxiosResponse } from 'axios';
 import Cookies from 'universal-cookie';
-import { BookDetails, User, RegisterResponseData, Rating } from 'types';
+import {
+  BookDetails,
+  User,
+  RegisterResponseData,
+  Rating,
+  AuthUser
+} from 'types';
 
 const BACKEND_BASE_URL = 'http://localhost:8080/';
 
@@ -17,10 +23,9 @@ export const getAllBooks = async (): Promise<AxiosResponse<BookDetails[]>> => {
   return await fetcher.get('/books');
 };
 
-export const getBookById = async (
-  isbn: string
-): Promise<AxiosResponse<BookDetails>> => {
-  return await fetcher.get(`/books/${isbn}`);
+export const getBookById = async (isbn: string): Promise<BookDetails> => {
+  const response = await fetcher.get(`/books/${isbn}`);
+  return response.data;
 };
 
 export const createUser = async (
@@ -41,11 +46,11 @@ export const login = async (
 export const logout = async (): Promise<void> => {
   await fetcher.post(`/auth/logout`).then(() => {
     localStorage.removeItem('user');
-    location.reload();
+    window.location.href = '/';
   });
 };
 
-export const getCurrentUser = (): User | undefined => {
+export const getCurrentUser = (): AuthUser | undefined => {
   const userString = localStorage.getItem('user');
   if (!userString) return;
 
@@ -64,15 +69,34 @@ export const getUserByUsername = async (
 
 export const getUserBooks = async (
   username: string
-): Promise<AxiosResponse<User>> => {
-  return await fetcher.get(`/books/users/${username}`);
+): Promise<BookDetails[]> => {
+  const response = await fetcher.get(`/books/user/${username}`);
+  return response.data;
 };
 
 export const getBookUserRating = async (
   ISBN: string,
-  username: string
-): Promise<AxiosResponse<Rating>> => {
-  return await fetcher.get(`/books/${ISBN}/${username}/rating`);
+  username: string | undefined
+): Promise<Rating | null> => {
+  if (!username) return null;
+
+  const response = await fetcher.get(`/books/${ISBN}/${username}/rating`);
+  return response.data;
+};
+
+export const rateBook = async (
+  ISBN: string,
+  username: string | undefined,
+  value: number | null
+  // token: string
+): Promise<void> => {
+  if (!value) return;
+  await fetcher.post(`/books/user/${username}/rate`, {
+    ISBN,
+    username,
+    value
+    // token
+  });
 };
 
 // export const getCurrentUser = async (): Promise<void> => {

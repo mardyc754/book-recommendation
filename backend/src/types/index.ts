@@ -16,7 +16,7 @@ export type BookDetails = {
 export type Rating = {
   username: string;
   ISBN: string;
-  value: number;
+  value: number | null;
 };
 
 export type User = {

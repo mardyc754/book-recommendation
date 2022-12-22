@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { User } from 'types';
+import { AuthUser } from 'types';
 import { getCurrentUser } from 'features/BackendAPI';
 
 type AuthContextValues = {
-  user: User | undefined;
+  user: AuthUser | undefined;
   isLoading: boolean;
 };
 
@@ -16,7 +16,7 @@ const AuthProvider = ({
 }: {
   children: React.ReactElement;
 }): JSX.Element => {
-  const [user, setUser] = React.useState<User>();
+  const [user, setUser] = React.useState<AuthUser>();
   const [isLoading, setIsLoading] = React.useState(true);
 
   React.useEffect(() => {

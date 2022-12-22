@@ -7,13 +7,14 @@ import PageWrapper from 'components/PageWrapper/PageWrapper';
 import {
   getBookById,
   getAllBooks,
-  getBookUserRating
+  getBookUserRating,
+  rateBook
 } from 'features/BackendAPI';
 import StarRating from 'components/StarRating';
 
-const Book = ({ data }: { data: BookDetails }) => {
-  const [userRating, setUserRating] = React.useState<Rating | null>(null);
-
+const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
+  const { user } = useAuth();
+  const [bookData, setBookData] = React.useState(initialBookData);
   const {
     ISBN,
     year,
@@ -23,18 +24,28 @@ const Book = ({ data }: { data: BookDetails }) => {
     publisher,
     imageURL,
     author
-  } = data;
+  } = bookData;
 
-  const { user } = useAuth();
+  const [userRating, setUserRating] = React.useState<number | null>(null);
 
   React.useEffect(() => {
-    if (user) {
-      (async function getUserRating() {
-        const response = await getBookUserRating(ISBN, user.username);
-        setUserRating(response.data);
-      })();
-    }
+    setBookData(initialBookData);
+    (async function getRating(): Promise<void> {
+      const rating = await getBookUserRating(ISBN, user?.username);
+      setUserRating(rating && rating.value);
+    })();
   }, [user]);
+
+  const onChangeUserRating = (newRating: number): void => {
+    (async function rateBookByUser(): Promise<void> {
+      await rateBook(ISBN, user?.username, newRating).then(() => {
+        setUserRating(newRating);
+      });
+
+      const newBookData = await getBookById(ISBN);
+      setBookData(newBookData);
+    })();
+  };
 
   return (
     <PageWrapper>
@@ -60,16 +71,20 @@ const Book = ({ data }: { data: BookDetails }) => {
               <Typography>Year: {year.low}</Typography>
               <Typography>Publisher: {publisher}</Typography>
               <Typography>ISBN: {ISBN}</Typography>
-              <StarRating value={rating} bookId={ISBN} iconSize="large" />
+              <StarRating
+                value={rating ?? 0}
+                bookId={ISBN}
+                iconSize="large"
+                onChangeUserRating={onChangeUserRating}
+              />
               <Typography>
                 Rating: {rating} ({numOfRatings.low})
               </Typography>
-              <Typography>Your rating: {userRating?.value}</Typography>
+              <Typography>Your rating: {userRating ?? 'No rating'}</Typography>
             </Stack>
           </Stack>
         </Stack>
       </Stack>
-      {/* tutaj może książki podobne do oglądanej */}
     </PageWrapper>
   );
 };
@@ -79,12 +94,10 @@ export async function getStaticPaths() {
   const paths = allBooks.data.map((book) => {
     return {
       params: {
-        id: book.ISBN,
-        bookData: book
+        id: book.ISBN
       }
     };
   });
-
   return {
     paths,
     fallback: false
@@ -92,11 +105,10 @@ export async function getStaticPaths() {
 }
 
 export async function getStaticProps({ params }: { params: { id: string } }) {
-  const { data } = await getBookById(params.id);
-
+  const initialBookData = await getBookById(params.id);
   return {
     props: {
-      data
+      initialBookData
     }
   };
 }
