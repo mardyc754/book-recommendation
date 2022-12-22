@@ -6,7 +6,7 @@ import { Stack, Box, Button } from '@mui/material';
 import { User } from 'types';
 import { HeaderButton } from './styles';
 import { useRouter } from 'next/router';
-import useAuth from 'hooks/useAuth';
+import useAuthContext from 'hooks/useAuthContext';
 import { getCurrentUser, logout } from 'features/BackendAPI';
 
 type PageWrapperProps = {
@@ -19,7 +19,7 @@ const PageWrapper = ({
   children
 }: PageWrapperProps): JSX.Element => {
   const { pathname } = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuthContext();
 
   return (
     <>
@@ -47,7 +47,7 @@ const PageWrapper = ({
             <h1>Book recommender</h1>
           </Box>
           {!isLoading && (
-            <Stack flexDirection="row">
+            <Stack flexDirection="row" component="nav">
               {pathname !== '/' && (
                 <Link href="/">
                   <HeaderButton variant="contained">Home page</HeaderButton>

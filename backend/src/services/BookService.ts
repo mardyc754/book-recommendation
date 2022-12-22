@@ -151,8 +151,58 @@ export default class BookService {
     }
   }
 
-  // TODO - cały sens projektu jest tutaj zawarty
-  public getRecommendedBooks(username: string) {}
+  public async getRecommendedBooks(username: string) {
+    const session = getSession();
+    let books: Book[] = [];
+    try {
+      const query = `
+      MATCH (u1:User { username: $username })
+      MATCH (u1)-[r:RATED]->(b:Book)
+      WITH u1, avg(r.value) AS u1_mean
+
+      MATCH (u1)-[r1:RATED]->(b:Book)<-[r2:RATED]-(u2)
+      WITH u1, u1_mean, u2, collect({r1: r1.value, r2: r2.value}) AS ratings WHERE size(ratings) > 1
+
+      MATCH (u2)-[r:RATED]->(b:Book)
+      WITH u1, u1_mean, u2, avg(r.value) AS u2_mean, ratings
+
+      UNWIND ratings AS r
+
+      WITH u1, u2, sum( (r.r1-u1_mean) * (r.r2-u2_mean) ) AS nominator,
+              sqrt( sum( (r.r1 - u1_mean)^2) * sum( (r.r2 - u2_mean) ^2)) AS denominator
+              WHERE denominator <> 0
+
+      WITH u1, u2, nominator/denominator AS pearson
+
+      ORDER BY pearson DESC
+
+      MATCH (u2)-[r:RATED]->(b:Book) WHERE NOT EXISTS( (u1)-[:RATED]->(b) )
+
+      WITH b, SUM( pearson * r.value)/SUM(pearson) AS score
+      ORDER BY score DESC
+
+      MATCH (u:User)-[r:RATED]->(b) return b, count(u) as numOfRatings, 
+            round(avg(r.value), 2) as averageRating
+      `;
+
+      const result = await session.executeRead((tx) =>
+        tx.run(query, { username })
+      );
+
+      result.records.forEach((record) => {
+        books.push({
+          ...record.get('b').properties,
+          numOfRatings: record.get('numOfRatings'),
+          rating: record.get('averageRating')
+        });
+      });
+    } catch (error) {
+      console.error(`Something went wrong: ${error}`);
+    } finally {
+      await session.close();
+      return books;
+    }
+  }
 
   public async getBookById(ISBN: string): Promise<BookDetails | null> {
     const session = getSession();

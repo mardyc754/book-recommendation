@@ -1,25 +1,32 @@
-import { Stack, Typography, CircularProgress } from '@mui/material';
+import { Stack, CircularProgress } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
-import useAuth from 'hooks/useAuth';
+import useAuthContext from 'hooks/useAuthContext';
 import {
   getAllUsers,
   getUserByUsername,
-  getUserBooks
+  getUserBooks,
+  getRecommendedBooks
 } from 'features/BackendAPI';
 
 import PageWrapper from 'components/PageWrapper/PageWrapper';
 import PageHeader from 'components/PageHeader';
-import StarRating from 'components/StarRating';
 import BookInfo from 'components/BookInfo';
 
-import { BookDetails, User } from 'types';
+import { User } from 'types';
 
 const UserPage = ({ username, id }: User) => {
-  const { user } = useAuth();
-  const { isLoading, data } = useQuery({
+  const { user } = useAuthContext();
+  const userBooksQuery = useQuery({
     queryKey: ['userBooks'],
     queryFn: () => getUserBooks(username)
   });
+
+  const recommendedBooksQuery = useQuery({
+    queryKey: ['recommendedBooks'],
+    queryFn: () => getRecommendedBooks(username)
+  });
+
+  const recommendedBooks = recommendedBooksQuery.data?.slice(0, 5);
 
   const isCurrentUserPage = user && user.username === username;
 
@@ -35,11 +42,31 @@ const UserPage = ({ username, id }: User) => {
         justifyItems="center"
         sx={{ marginBottom: '32px' }}
       >
-        {!isLoading ? (
-          data?.map((bookProps) => {
+        {!userBooksQuery.isLoading ? (
+          userBooksQuery.data?.map((bookProps) => {
             return (
               <BookInfo
                 key={`BookInfo-rated-${bookProps.ISBN}`}
+                data={bookProps}
+              />
+            );
+          })
+        ) : (
+          <CircularProgress />
+        )}
+      </Stack>
+
+      <PageHeader title="Books recommended for you" />
+      <Stack
+        alignItems="center"
+        justifyItems="center"
+        sx={{ marginBottom: '32px' }}
+      >
+        {!recommendedBooksQuery.isLoading ? (
+          recommendedBooks?.map((bookProps) => {
+            return (
+              <BookInfo
+                key={`BookInfo-recommended-rated-${bookProps.ISBN}`}
                 data={bookProps}
               />
             );

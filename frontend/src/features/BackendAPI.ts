@@ -34,6 +34,14 @@ export const getHighestRatedBooks = async (): Promise<BookDetails[]> => {
   return response.data;
 };
 
+export const getRecommendedBooks = async (
+  username: string | undefined
+): Promise<BookDetails[]> => {
+  if (!username) return Promise.resolve([]);
+  const response = await fetcher.get(`/books/user/${username}/recommended`);
+  return response.data;
+};
+
 export const getBookById = async (isbn: string): Promise<BookDetails> => {
   const response = await fetcher.get(`/books/${isbn}`);
   return response.data;
@@ -98,18 +106,14 @@ export const getBookUserRating = async (
 export const rateBook = async (
   ISBN: string,
   username: string | undefined,
-  value: number | null
-  // token: string
+  value: number | null,
+  token: string | undefined
 ): Promise<void> => {
   if (!value) return;
   await fetcher.post(`/books/user/${username}/rate`, {
     ISBN,
     username,
-    value
-    // token
+    value,
+    token
   });
 };
-
-// export const getCurrentUser = async (): Promise<void> => {
-//   await fetcher.get(`/auth/token`);
-// };

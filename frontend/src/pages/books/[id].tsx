@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Stack, Typography } from '@mui/material';
-import { BookDetails, Rating } from 'types';
+import { Stack, Typography, Button } from '@mui/material';
+import { BookDetails } from 'types';
 
-import useAuth from 'hooks/useAuth';
+import useAuthContext from 'hooks/useAuthContext';
 import PageWrapper from 'components/PageWrapper/PageWrapper';
 import {
   getBookById,
@@ -14,7 +14,7 @@ import {
 import StarRating from 'components/StarRating';
 
 const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
-  const { user } = useAuth();
+  const { user } = useAuthContext();
   const queryClient = useQueryClient();
 
   const { ISBN, year, title, publisher, imageURL, author } = initialBookData;
@@ -31,7 +31,7 @@ const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
 
   const onChangeUserRating = (newRating: number): void => {
     (async function rateBookByUser(): Promise<void> {
-      await rateBook(ISBN, user?.username, newRating).then(() => {
+      await rateBook(ISBN, user?.username, newRating, user?.token).then(() => {
         queryClient.invalidateQueries({ queryKey: ['book'] });
       });
     })();
@@ -54,7 +54,12 @@ const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
           <Stack>
             <img src={imageURL} alt={title} width={300} height={450} />
           </Stack>
-          <Stack sx={{ paddingLeft: '56px' }} display="grid">
+          <Stack
+            sx={{
+              paddingLeft: '56px'
+            }}
+            display="grid"
+          >
             <Stack>
               <Typography>Title: {title}</Typography>
               <Typography>Author: {author}</Typography>
@@ -76,10 +81,12 @@ const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
                   )
                 </>
               </Typography>
-              {user && (
+              {user ? (
                 <Typography>
                   Your rating: {userRatingQuery.data?.value ?? 'No rating'}
                 </Typography>
+              ) : (
+                <Typography>You must sign up to rate this book</Typography>
               )}
             </Stack>
           </Stack>

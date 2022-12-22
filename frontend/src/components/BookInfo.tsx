@@ -18,7 +18,8 @@ const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
         boxShadow: '5px 5px 20px #ccc',
         margin: '24px',
         backgroundColor: '#effefef',
-        padding: '24px'
+        padding: '24px',
+        boxSizing: 'content-box'
       }}
     >
       <div style={{ width: '100px', height: '150px' }}>
@@ -43,7 +44,11 @@ const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
           </p>
           <StarRating bookId={ISBN} value={rating} iconSize="small" readOnly />
         </Stack>
-        <Stack sx={{ padding: '32px' }}>
+        <Stack
+          sx={{
+            padding: '32px'
+          }}
+        >
           <Link href={`/books/${ISBN}`}>
             <Button variant="contained" sx={{ textTransform: 'none' }}>
               Details

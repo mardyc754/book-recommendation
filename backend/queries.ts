@@ -72,3 +72,121 @@ const otherUserRatings = `MATCH (j:User {id: 254})-[:RATED]->(userBook:Book)<-[:
 // MATCH (u:User {username: 'Jennifer'})-[r:RATED]->(b:Bok {ISBN: 'qqq'})
 // DELETE r
 const bookFromRange = 'Match(b:Book) return apoc.agg.slice(b, 0, 2)';
+
+// zgrupowane ratingi książek
+// MATCH (j:User {id: 1})-[:RATED]->(b:Book)<-[r:RATED]-(p:User) return p.username, collect(b.ISBN), collect(r.value)
+
+// MATCH (j:User {id: 1})-[:RATED]->(b:Book)<-[r:RATED]-(p:User) return b.ISBN, collect(p.username), collect(r.value)
+
+// MATCH (u:User {id: 1})-[:RATED]->(b:Book)<-[r:RATED]-(p:User) return u.username as user, collect(b.ISBN), collect(r.value)
+// UNION ALL
+// MATCH (u:User {id: 1})-[:RATED]->(b:Book)<-[r:RATED]-(p:User) return p.username as user, collect(b.ISBN), collect(r.value)
+
+// pozostałe ocenione książki
+// MATCH (j:User {id: 1})-[:RATED]->(userBook:Book)<-[:RATED]-(p:User)-[r:RATED]->(b:Book) return p.username, collect(b.ISBN), collect(r.value)
+
+// MATCH (u1:User) WHERE u1.id = 1
+// MATCH (u1)-[r:RATED]->(b:Book)
+// WITH u1, avg(r.value) AS u1_mean
+
+// MATCH (u1)-[r1:RATED]->(b:Book)<-[r2:RATED]-(u2)
+// WITH u1, u1_mean, u2, COLLECT({r1: r1, r2: r2}) AS ratings WHERE size(ratings) > 1
+
+// MATCH (u2)-[r:RATED]->(b:Book)
+// WITH u1, u1_mean, u2, avg(r.value) AS u2_mean, ratings
+
+// UNWIND ratings AS r
+
+// WITH sum( (r.r1.value-u1_mean) * (r.r2.value-u2_mean) ) AS nom,
+//         sqrt( sum( (r.r1.value - u1_mean)^2) * sum( (r.r2.value - u2_mean) ^2)) AS denom,
+//         u1, u2 WHERE denom <> 0
+
+// WITH u1, u2, nom/denom AS pearson
+// ORDER BY pearson DESC LIMIT 10
+
+// MATCH (u2)-[r:RATED]->(b:Book) WHERE NOT EXISTS( (u1)-[:RATED]->(b) )
+
+// RETURN b.ISBN as ISBN, b.title as title, SUM( pearson * r.value) AS score
+// ORDER BY score DESC
+
+// MATCH (u1:User) WHERE u1.id = 1
+// MATCH (u1)-[r:RATED]->(b:Book)
+// WITH u1, avg(r.value) AS u1_mean
+
+// MATCH (u1)-[r1:RATED]->(b:Book)<-[r2:RATED]-(u2)
+// WITH u1, u1_mean, u2, COLLECT({r1: r1.value, r2: r2.value}) AS ratings WHERE size(ratings) > 1
+
+// MATCH (u2)-[r:RATED]->(b:Book)
+// WITH u1, u1_mean, u2, avg(r.value) AS u2_mean, ratings
+
+// UNWIND ratings AS r
+
+// WITH sum( (r.r1-u1_mean) * (r.r2-u2_mean) ) AS nom,
+//         sqrt( sum( (r.r1 - u1_mean)^2) * sum( (r.r2 - u2_mean) ^2)) AS denom,
+//         u1, u2 WHERE denom <> 0
+
+// WITH u1, u2, nom/denom AS pearson
+// ORDER BY pearson DESC LIMIT 10
+
+// MATCH (u2)-[r:RATED]->(b:Book) WHERE NOT EXISTS( (u1)-[:RATED]->(b) )
+
+// RETURN b.ISBN as ISBN, b.title as title, SUM( pearson * r.value) AS score
+// ORDER BY score DESC
+
+// dla książek
+// MATCH (b1:Book { ISBN: '0195153448' })
+// MATCH (b1)<-[r:RATED]-(u:User)
+// WITH b1, avg(r.value) AS u1_mean
+
+// MATCH (b1)<-[r1:RATED]-(u:User)-[r2:RATED]->(b2:Book)
+// WITH b1, u1_mean, b2, collect({r1: r1.value, r2: r2.value}) AS ratings
+
+// MATCH (b2)<-[r:RATED]->(u:User)
+// WITH b1, u1_mean, b2, avg(r.value) AS u2_mean, ratings
+
+// UNWIND ratings AS r
+
+// WITH b1, b2, sum( (r.r1-u1_mean) * (r.r2-u2_mean) ) AS nominator,
+//         sqrt( sum( (r.r1 - u1_mean)^2) * sum( (r.r2 - u2_mean) ^2)) AS denominator
+//         WHERE denominator <> 0
+
+// WITH b1, b2, nominator/denominator AS pearson
+
+// ORDER BY pearson DESC
+
+// MATCH (b2)<-[r:RATED]->(u:User) WHERE NOT EXISTS( (b1)<-[:RATED]-(u) )
+
+// WITH b2, SUM( pearson * r.value)/SUM(pearson) AS score
+// ORDER BY score DESC
+
+// MATCH (u:User)-[r:RATED]->(b2) return b2 as b, count(u) as numOfRatings,
+//       round(avg(r.value), 2) as averageRating
+
+// książki podobne na podstawie ocen
+// MATCH (b1:Book { ISBN: '0195153448' })
+// MATCH (b1)<-[r:RATED]-(u:User)
+// WITH b1, avg(r.value) AS u1_mean
+
+// MATCH (b1)<-[r1:RATED]-(u:User)-[r2:RATED]->(b2:Book)
+// WITH b1, u1_mean, b2, collect({r1: r1.value, r2: r2.value}) AS ratings
+
+// MATCH (b2)<-[r:RATED]->(u:User)
+// WITH b1, u1_mean, b2, avg(r.value) AS u2_mean, ratings
+
+// UNWIND ratings AS r
+
+// WITH b1, b2, sum( (r.r1-u1_mean) * (r.r2-u2_mean) ) AS nominator,
+//         sqrt( sum( (r.r1 - u1_mean)^2) * sum( (r.r2 - u2_mean) ^2)) AS denominator
+//         WHERE denominator <> 0
+
+// WITH b1, b2, nominator/denominator AS pearson
+
+// ORDER BY pearson DESC
+
+// MATCH (b2)<-[r:RATED]->(u:User) WHERE NOT EXISTS( (b1)<-[:RATED]-(u) )
+
+// WITH b2, SUM( pearson * r.value)/SUM(pearson) AS score
+// ORDER BY score DESC
+
+// MATCH (u:User)-[r:RATED]->(b2) return b2 as b, count(u) as numOfRatings,
+//       round(avg(r.value), 2) as averageRating

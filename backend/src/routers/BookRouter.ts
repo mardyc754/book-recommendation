@@ -1,8 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import BookService from '../services/BookService';
 import AbstractRouter from './AbstractRouter';
 import { verifyToken } from '../middlewares';
-import { BookDetails } from '../types';
 export default class BookRouter extends AbstractRouter {
   private bookService = new BookService();
 
@@ -18,22 +17,8 @@ export default class BookRouter extends AbstractRouter {
     this.router.get('/:id', this.getBookById);
     this.router.get('/:id/:username/rating', this.getBookUserRating);
     this.router.get('/user/:username', this.getUserBooks);
-    this.router.get(
-      '/user/:username/recommended',
-      verifyToken,
-      this.getRecommendedBooks
-    );
-    this.router.post(
-      '/user/:username/rate',
-      // verifyToken,
-      this.rateBook
-    );
-    // this.router.put('/user/:username/rate', verifyToken, this.changeBookRating);
-    this.router.delete(
-      '/user/:username/rate',
-      verifyToken,
-      this.deleteBookRating
-    );
+    this.router.get('/user/:username/recommended', this.getRecommendedBooks);
+    this.router.post('/user/:username/rate', verifyToken, this.rateBook);
   }
 
   private getAllBooks = async (_: Request, res: Response): Promise<void> => {
@@ -92,9 +77,18 @@ export default class BookRouter extends AbstractRouter {
     }
   };
 
-  // TODO: najważniejszy endpoint w programie
-  // od niego zależy czy skończę te studia lub nie
-  private getRecommendedBooks = async (): Promise<void> => {};
+  private getRecommendedBooks = async (
+    req: Request,
+    res: Response
+  ): Promise<void> => {
+    const { username } = req.params;
+    const books = await this.bookService.getRecommendedBooks(username);
+    if (books !== null) {
+      res.status(200).send(books);
+    } else {
+      res.status(400).send('Cannot get recommended books');
+    }
+  };
 
   private getBookById = async (req: Request, res: Response): Promise<void> => {
     const { id } = req.params;
@@ -110,6 +104,7 @@ export default class BookRouter extends AbstractRouter {
       res.status(400).send('Cannot get book by given id');
     }
   };
+
   private rateBook = async (req: Request, res: Response): Promise<void> => {
     const { username, ISBN, value } = req.body;
     const saved = await this.bookService.rateBook(username, ISBN, value);
@@ -117,35 +112,6 @@ export default class BookRouter extends AbstractRouter {
       res.status(200).send();
     } else {
       res.status(400).send('Cannot get book by given id');
-    }
-  };
-  // private changeBookRating = async (
-  //   req: Request,
-  //   res: Response
-  // ): Promise<void> => {
-  //   const { username, ISBN, rating } = req.body;
-  //   const saved = await this.bookService.changeBookRating(
-  //     username,
-  //     ISBN,
-  //     rating
-  //   );
-  //   if (saved) {
-  //     res.status(200).send();
-  //   } else {
-  //     res.status(400).send('Cannot change book rating');
-  //   }
-  // };
-
-  private deleteBookRating = async (
-    req: Request,
-    res: Response
-  ): Promise<void> => {
-    const { username, ISBN } = req.body;
-    const saved = await this.bookService.deleteBookRating(username, ISBN);
-    if (saved) {
-      res.status(200).send();
-    } else {
-      res.status(400).send('Cannot delete book rating');
     }
   };
 }
