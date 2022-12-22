@@ -19,8 +19,19 @@ const fetcher = axios.create({
   }
 });
 
-export const getAllBooks = async (): Promise<AxiosResponse<BookDetails[]>> => {
-  return await fetcher.get('/books');
+export const getAllBooks = async (): Promise<BookDetails[]> => {
+  const response = await fetcher.get('/books');
+  return response.data;
+};
+
+export const getPopularBooks = async (): Promise<BookDetails[]> => {
+  const response = await fetcher.get('/books/popular');
+  return response.data;
+};
+
+export const getHighestRatedBooks = async (): Promise<BookDetails[]> => {
+  const response = await fetcher.get('/books/highestRated');
+  return response.data;
 };
 
 export const getBookById = async (isbn: string): Promise<BookDetails> => {

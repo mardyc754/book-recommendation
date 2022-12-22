@@ -16,7 +16,7 @@ import { BookDetails, User } from 'types';
 
 const UserPage = ({ username, id }: User) => {
   const { user } = useAuth();
-  const { isLoading, isError, data, error } = useQuery<BookDetails[]>({
+  const { isLoading, data } = useQuery({
     queryKey: ['userBooks'],
     queryFn: () => getUserBooks(username)
   });

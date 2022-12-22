@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { AuthUser } from 'types';
-import { getCurrentUser } from 'features/BackendAPI';
 
 type AuthContextValues = {
   user: AuthUser | undefined;
   isLoading: boolean;
+  getCurrentUser: () => AuthUser | undefined;
 };
 
 export const AuthContext = React.createContext<AuthContextValues | undefined>(
@@ -19,6 +19,13 @@ const AuthProvider = ({
   const [user, setUser] = React.useState<AuthUser>();
   const [isLoading, setIsLoading] = React.useState(true);
 
+  const getCurrentUser = (): AuthUser | undefined => {
+    const userString = localStorage.getItem('user');
+    if (!userString) return;
+
+    return JSON.parse(userString);
+  };
+
   React.useEffect(() => {
     const parsedUser = getCurrentUser();
 
@@ -30,7 +37,7 @@ const AuthProvider = ({
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, isLoading }}>
+    <AuthContext.Provider value={{ user, isLoading, getCurrentUser }}>
       {children}
     </AuthContext.Provider>
   );

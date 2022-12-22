@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Stack, Typography } from '@mui/material';
 import { BookDetails, Rating } from 'types';
 
@@ -14,36 +15,25 @@ import StarRating from 'components/StarRating';
 
 const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
   const { user } = useAuth();
-  const [bookData, setBookData] = React.useState(initialBookData);
-  const {
-    ISBN,
-    year,
-    title,
-    rating,
-    numOfRatings,
-    publisher,
-    imageURL,
-    author
-  } = bookData;
+  const queryClient = useQueryClient();
 
-  const [userRating, setUserRating] = React.useState<number | null>(null);
+  const { ISBN, year, title, publisher, imageURL, author } = initialBookData;
 
-  React.useEffect(() => {
-    setBookData(initialBookData);
-    (async function getRating(): Promise<void> {
-      const rating = await getBookUserRating(ISBN, user?.username);
-      setUserRating(rating && rating.value);
-    })();
-  }, [user]);
+  const userRatingQuery = useQuery({
+    queryKey: ['book', user],
+    queryFn: () => getBookUserRating(initialBookData.ISBN, user?.username)
+  });
+
+  const bookQuery = useQuery({
+    queryKey: ['book', ISBN],
+    queryFn: () => getBookById(ISBN)
+  });
 
   const onChangeUserRating = (newRating: number): void => {
     (async function rateBookByUser(): Promise<void> {
       await rateBook(ISBN, user?.username, newRating).then(() => {
-        setUserRating(newRating);
+        queryClient.invalidateQueries({ queryKey: ['book'] });
       });
-
-      const newBookData = await getBookById(ISBN);
-      setBookData(newBookData);
     })();
   };
 
@@ -72,15 +62,25 @@ const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
               <Typography>Publisher: {publisher}</Typography>
               <Typography>ISBN: {ISBN}</Typography>
               <StarRating
-                value={rating ?? 0}
+                value={bookQuery.data?.rating ?? initialBookData.rating}
                 bookId={ISBN}
                 iconSize="large"
                 onChangeUserRating={onChangeUserRating}
+                readOnly={!user}
               />
               <Typography>
-                Rating: {rating} ({numOfRatings.low})
+                <>
+                  Rating: {bookQuery.data?.rating ?? initialBookData.rating} (
+                  {bookQuery.data?.numOfRatings.low ??
+                    initialBookData.numOfRatings.low}
+                  )
+                </>
               </Typography>
-              <Typography>Your rating: {userRating ?? 'No rating'}</Typography>
+              {user && (
+                <Typography>
+                  Your rating: {userRatingQuery.data?.value ?? 'No rating'}
+                </Typography>
+              )}
             </Stack>
           </Stack>
         </Stack>
@@ -91,7 +91,7 @@ const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
 
 export async function getStaticPaths() {
   const allBooks = await getAllBooks();
-  const paths = allBooks.data.map((book) => {
+  const paths = allBooks.map((book) => {
     return {
       params: {
         id: book.ISBN

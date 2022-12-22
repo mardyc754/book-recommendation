@@ -1,8 +1,7 @@
 import * as React from 'react';
-// import Link from 'next/link';
-import { Stack, Box, Button, Typography } from '@mui/material';
+import Link from 'next/link';
+import { Stack, Button, Typography } from '@mui/material';
 import { BookDetails } from 'types';
-import { getBookById, getAllBooks } from 'features/BackendAPI';
 import StarRating from './StarRating';
 
 type BookInfoProps = {
@@ -45,9 +44,11 @@ const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
           <StarRating bookId={ISBN} value={rating} iconSize="small" readOnly />
         </Stack>
         <Stack sx={{ padding: '32px' }}>
-          <Button variant="contained" sx={{ textTransform: 'none' }}>
-            <a href={`/books/${ISBN}`}>Details</a>
-          </Button>
+          <Link href={`/books/${ISBN}`}>
+            <Button variant="contained" sx={{ textTransform: 'none' }}>
+              Details
+            </Button>
+          </Link>
         </Stack>
       </Stack>
     </Stack>

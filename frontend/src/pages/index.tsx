@@ -1,12 +1,49 @@
 import * as React from 'react';
-import { Stack, Select, MenuItem } from '@mui/material';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Stack, Select, MenuItem, SelectChangeEvent } from '@mui/material';
 
-import PageWrapper from '../components/PageWrapper/PageWrapper';
+import PageWrapper from 'components/PageWrapper/PageWrapper';
 import BookInfo from 'components/BookInfo';
-import { getAllBooks } from '../features/BackendAPI';
+import { CircularProgress } from '@mui/material';
+import {
+  getAllBooks,
+  getPopularBooks,
+  getHighestRatedBooks
+} from '../features/BackendAPI';
 import { BookDetails } from 'types';
 
-export default function Home({ books }: { books: BookDetails[] }) {
+enum DisplayOption {
+  ALL = 'all',
+  POPULAR = 'popular',
+  HIGHEST_RATED = 'highestRated',
+  RECOMMENDED = 'recommended'
+}
+
+const optionQuery = new Map([
+  [DisplayOption.ALL, getAllBooks],
+  [DisplayOption.POPULAR, getPopularBooks],
+  [DisplayOption.HIGHEST_RATED, getHighestRatedBooks]
+]);
+
+export default function Home() {
+  const queryClient = useQueryClient();
+
+  const [displayOption, setDisplayOption] = React.useState<DisplayOption>(
+    DisplayOption.ALL
+  );
+
+  const { isLoading, data } = useQuery({
+    queryKey: ['books', displayOption],
+    queryFn: optionQuery.get(displayOption)
+  });
+
+  const booksData = data?.slice(0, 20);
+
+  const handleDisplayOptionChange = (e: SelectChangeEvent) => {
+    setDisplayOption(e.target.value as DisplayOption);
+    queryClient.invalidateQueries({ queryKey: ['books'] });
+  };
+
   return (
     <PageWrapper>
       <Stack>
@@ -28,9 +65,14 @@ export default function Home({ books }: { books: BookDetails[] }) {
           </div>
           <Stack flexDirection="row">
             <span style={{ margin: '16px' }}>Display:</span>
-            <Select defaultValue="popular" sx={{ minWidth: '150px' }}>
+            <Select
+              defaultValue="all"
+              sx={{ minWidth: '150px' }}
+              onChange={handleDisplayOptionChange}
+            >
               {/* tylko dla zalogowanych użytkowników */}
               {/* <MenuItem value="recommended">Recommended for you</MenuItem> */}
+              <MenuItem value="all">All</MenuItem>
               <MenuItem value="popular">Most popular</MenuItem>
               <MenuItem value="highestRated">Highest rated</MenuItem>
             </Select>
@@ -42,23 +84,17 @@ export default function Home({ books }: { books: BookDetails[] }) {
           justifyItems="center"
           sx={{ marginBottom: '32px' }}
         >
-          {books.map((book) => {
-            return <BookInfo key={`Home-BookInfo-${book.ISBN}`} data={book} />;
-          })}
+          {isLoading ? (
+            <CircularProgress />
+          ) : (
+            booksData?.map((book) => {
+              return (
+                <BookInfo key={`Home-BookInfo-${book.ISBN}`} data={book} />
+              );
+            })
+          )}
         </Stack>
       </Stack>
     </PageWrapper>
   );
-}
-
-export async function getStaticProps() {
-  const res = await getAllBooks();
-
-  const books = res.data.slice(0, 20);
-
-  return {
-    props: {
-      books
-    }
-  };
 }
