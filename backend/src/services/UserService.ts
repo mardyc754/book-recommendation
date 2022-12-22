@@ -14,13 +14,15 @@ export default class UserService {
       );
 
       const userRecord = result.records[0];
-      user = {
-        id: userRecord.get('u.id'),
-        username: userRecord.get('u.username'),
-        password: userRecord.get('u.password')
-      };
+      if (userRecord) {
+        user = {
+          id: userRecord.get('u.id'),
+          username: userRecord.get('u.username'),
+          password: userRecord.get('u.password')
+        };
+      }
     } catch (error) {
-      console.error(`Something went wrong: ${error}`);
+      console.log(`Something went wrong: ${error}`);
     } finally {
       await session.close();
       return user;
