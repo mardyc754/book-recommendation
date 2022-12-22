@@ -45,6 +45,9 @@ Strona główna:
 
 ![home_page](./docs/home_page.png)
 
+Na stronie głównej można wyświetlić wszystkie książki znajdujące się w bazie. Za pomocą listy rozwijanej
+można kontrolować jaka grupa książek ma się wyświetlać (wszystkie, popularne, najwyżej ocenione, polecane)
+
 
 Strona z informacjami o książce:
 
