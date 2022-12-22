@@ -10,7 +10,7 @@ SET n.`title` = nodeRecord.`Book-Title`
 SET n.`author` = nodeRecord.`Book-Author`
 SET n.`year` = toInteger(trim(nodeRecord.`Year-Of-Publication`))
 SET n.`publisher` = nodeRecord.`Publisher`
-SET n.`Image-URL-L` = nodeRecord.`Image-URL-L`;
+SET n.`imageURL` = nodeRecord.`Image-URL-L`;
 
 CREATE CONSTRAINT `imp_uniq_User_id` IF NOT EXISTS
 FOR (n: `User`)

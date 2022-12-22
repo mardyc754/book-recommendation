@@ -71,8 +71,7 @@ const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {
               <Typography>
                 <>
                   Rating: {bookQuery.data?.rating ?? initialBookData.rating} (
-                  {bookQuery.data?.numOfRatings.low ??
-                    initialBookData.numOfRatings.low}
+                  {bookQuery.data?.numOfRatings ?? initialBookData.numOfRatings}
                   )
                 </>
               </Typography>

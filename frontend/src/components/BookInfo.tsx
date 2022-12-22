@@ -10,6 +10,7 @@ type BookInfoProps = {
 
 const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
   const { imageURL, title, author, rating, numOfRatings, ISBN } = data;
+
   return (
     <Stack
       flexDirection="row"
@@ -40,7 +41,7 @@ const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
           <Typography sx={{ fontSize: '22px' }}>{title}</Typography>
           <p>{author}</p>
           <p>
-            Rating: {rating} ({numOfRatings.low})
+            Rating: {rating} ({numOfRatings.low ?? numOfRatings})
           </p>
           <StarRating bookId={ISBN} value={rating} iconSize="small" readOnly />
         </Stack>

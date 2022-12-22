@@ -6,16 +6,21 @@ export default class BookService {
     const session = getSession();
     let books: BookDetails[] = [];
     try {
-      const query = `MATCH(u:User)-[r:RATED]->(b:Book) return b, count(u) as numOfRatings, 
-      round(avg(r.value), 2) as averageRating`;
+      const query = `MATCH (b:Book) 
+      MATCH(u:User)-[r:RATED]->(b) return b, count(u) as numOfRatings, 
+            round(avg(r.value), 2) as averageRating
+      UNION
+      MATCH (b:Book) WHERE NOT EXISTS((:User)-[:RATED]->(b)) return b, 0 as numOfRatings, 
+            0 as averageRating`;
 
       const result = await session.executeRead((tx) => tx.run(query));
 
       result.records.forEach((record) => {
         books.push({
           ...record.get('b').properties,
-          numOfRatings: record.get('numOfRatings'),
-          rating: record.get('averageRating')
+          numOfRatings:
+            record.get('numOfRatings').low ?? record.get('numOfRatings'),
+          rating: record.get('averageRating').low ?? record.get('averageRating')
         });
       });
     } catch (error) {
@@ -23,48 +28,6 @@ export default class BookService {
     } finally {
       await session.close();
       return books;
-    }
-  }
-
-  public async getBooksForPage(page: number, limit: number): Promise<Book[]> {
-    const session = getSession();
-    let books: BookDetails[] = [];
-    try {
-      const query = `MATCH(u:User)-[r:RATED]->(b:Book) WHERE b.rowNumber > $page AND b.rowNumber < $page+$limit return b, count(u) as numOfRatings, 
-      round(avg(r.value), 2) as averageRating`;
-
-      const result = await session.executeRead((tx) =>
-        tx.run(query, { page, limit })
-      );
-
-      result.records.forEach((record) => {
-        books.push({
-          ...record.get('b').properties,
-          numOfRatings: record.get('numOfRatings'),
-          rating: record.get('averageRating')
-        });
-      });
-    } catch (error) {
-      console.error(`Something went wrong: ${error}`);
-    } finally {
-      await session.close();
-      return books;
-    }
-  }
-
-  public async getNumberOfBooks(): Promise<number> {
-    const session = getSession();
-    let numOfBooks = 0;
-    try {
-      const query = `Match(b:Book) return count(b) as numOfBooks`;
-
-      const result = await session.executeRead((tx) => tx.run(query));
-      numOfBooks = result.records[0].get('numOfBooks').properties.low;
-    } catch (error) {
-      console.error(`Something went wrong: ${error}`);
-    } finally {
-      await session.close();
-      return numOfBooks;
     }
   }
 
@@ -72,9 +35,12 @@ export default class BookService {
     const session = getSession();
     let books: BookDetails[] = [];
     try {
-      const query = `MATCH (u:User)-[r:RATED]->(b:Book) 
-                     return b, count(u) as numOfRatings, 
-                     round(avg(r.value), 2) as averageRating 
+      const query = `MATCH (b:Book) 
+      MATCH(u:User)-[r:RATED]->(b) return b, count(u) as numOfRatings, 
+            round(avg(r.value), 2) as averageRating ORDER by numOfRatings desc
+      UNION
+      MATCH (b:Book) WHERE NOT EXISTS((:User)-[:RATED]->(b)) return b, 0 as numOfRatings, 
+            0 as averageRating
                      ORDER by numOfRatings desc`;
 
       const result = await session.executeRead((tx) => tx.run(query));
@@ -82,8 +48,9 @@ export default class BookService {
       result.records.forEach((record) => {
         books.push({
           ...record.get('b').properties,
-          numOfRatings: record.get('numOfRatings'),
-          rating: record.get('averageRating')
+          numOfRatings:
+            record.get('numOfRatings').low ?? record.get('numOfRatings'),
+          rating: record.get('averageRating').low ?? record.get('averageRating')
         });
       });
     } catch (error) {
@@ -98,9 +65,12 @@ export default class BookService {
     const session = getSession();
     let books: BookDetails[] = [];
     try {
-      const query = `MATCH (u:User)-[r:RATED]->(b:Book) 
-                     return b, count(u) as numOfRatings, 
-                     round(avg(r.value), 2) as averageRating 
+      const query = `MATCH (b:Book) 
+      MATCH(u:User)-[r:RATED]->(b) return b, count(u) as numOfRatings, 
+            round(avg(r.value), 2) as averageRating ORDER by averageRating desc
+      UNION
+      MATCH (b:Book) WHERE NOT EXISTS((:User)-[:RATED]->(b)) return b, 0 as numOfRatings, 
+            0 as averageRating
                      ORDER by averageRating desc`;
 
       const result = await session.executeRead((tx) => tx.run(query));
@@ -108,8 +78,9 @@ export default class BookService {
       result.records.forEach((record) => {
         books.push({
           ...record.get('b').properties,
-          numOfRatings: record.get('numOfRatings'),
-          rating: record.get('averageRating')
+          numOfRatings:
+            record.get('numOfRatings').low ?? record.get('numOfRatings'),
+          rating: record.get('averageRating').low ?? record.get('averageRating')
         });
       });
     } catch (error) {
@@ -138,9 +109,11 @@ export default class BookService {
       result.records.forEach((record) => {
         books.push({
           ...record.get('b').properties,
-          numOfRatings: record.get('numOfRatings'),
-          rating: record.get('averageRating'),
-          userRating: record.get('userRating')
+          numOfRatings:
+            record.get('numOfRatings').low ?? record.get('numOfRatings'),
+          rating:
+            record.get('averageRating').low ?? record.get('averageRating'),
+          userRating: record.get('userRating').low ?? record.get('userRating')
         });
       });
     } catch (error) {
@@ -208,16 +181,26 @@ export default class BookService {
     const session = getSession();
     let book: BookDetails | null = null;
     try {
-      const query = `MATCH(u:User)-[r:RATED]->(b:Book { ISBN: $ISBN }) return b, count(u) as numOfRatings, 
+      let query = `MATCH(u:User)-[r:RATED]->(b:Book { ISBN: $ISBN }) return b, count(u) as numOfRatings, 
         round(avg(r.value), 2) as averageRating`;
 
-      const result = await session.executeRead((tx) => tx.run(query, { ISBN }));
+      let result = await session.executeRead((tx) => tx.run(query, { ISBN }));
 
-      const record = result.records[0];
+      let record = result.records[0];
+
+      if (!record) {
+        query = `MATCH (b:Book { ISBN: $ISBN }) return b, 0 as numOfRatings, 
+        0 as averageRating`;
+        result = await session.executeRead((tx) => tx.run(query, { ISBN }));
+
+        record = result.records[0];
+      }
+
       book = {
         ...record.get('b').properties,
-        numOfRatings: record.get('numOfRatings'),
-        rating: record.get('averageRating')
+        numOfRatings:
+          record.get('numOfRatings').low ?? record.get('numOfRatings'),
+        rating: record.get('averageRating').low ?? record.get('averageRating')
       };
     } catch (error) {
       console.error(`Something went wrong: ${error}`);
