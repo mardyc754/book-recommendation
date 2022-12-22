@@ -169,7 +169,7 @@ te platformy w związku z możliwością darmowego hostingu na tychże serwisach
 
 ## VII. Linki do aplikacji
 
-Aplikacja po stronie klienta dostępna jest pod adresem: https://book-recommendation-hautt446q-mardyc754.vercel.app/
+Aplikacja po stronie klienta dostępna jest pod adresem: https://book-recommendation-seven.vercel.app/
 
 Aplikację serwera wdrożono pod adresem: https://bookrecommender-2kdl.onrender.com/
 
