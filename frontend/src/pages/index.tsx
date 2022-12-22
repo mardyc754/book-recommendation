@@ -43,7 +43,7 @@ export default function Home() {
     queryFn: optionQueries.get(displayOption)
   });
 
-  const booksData = data?.slice(0, 20);
+  const booksData = data?.slice(0, 50);
 
   const handleDisplayOptionChange = (e: SelectChangeEvent) => {
     setDisplayOption(e.target.value as DisplayOption);
