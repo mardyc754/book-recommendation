@@ -8,7 +8,7 @@ import {
   RegisterData
 } from 'types';
 
-const BACKEND_BASE_URL = 'http://localhost:8080/';
+const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL;
 
 const fetcher = axios.create({
   baseURL: BACKEND_BASE_URL,
