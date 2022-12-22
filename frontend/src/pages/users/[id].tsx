@@ -1,4 +1,4 @@
-import { Stack, CircularProgress } from '@mui/material';
+import { Stack, CircularProgress, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import useAuthContext from 'hooks/useAuthContext';
 import {
@@ -6,15 +6,15 @@ import {
   getUserByUsername,
   getUserBooks,
   getRecommendedBooks
-} from 'features/BackendAPI';
+} from 'api';
 
-import PageWrapper from 'components/PageWrapper/PageWrapper';
+import PageWrapper from 'components/PageWrapper';
 import PageHeader from 'components/PageHeader';
 import BookInfo from 'components/BookInfo';
 
 import { User } from 'types';
 
-const UserPage = ({ username, id }: User) => {
+const UserPage = ({ username }: User) => {
   const { user } = useAuthContext();
   const userBooksQuery = useQuery({
     queryKey: ['userBooks'],
@@ -54,6 +54,9 @@ const UserPage = ({ username, id }: User) => {
         ) : (
           <CircularProgress />
         )}
+        {!userBooksQuery.isLoading && userBooksQuery.data?.length === 0 && (
+          <Typography>You have no rated books</Typography>
+        )}
       </Stack>
 
       <PageHeader title="Books recommended for you" />
@@ -74,6 +77,10 @@ const UserPage = ({ username, id }: User) => {
         ) : (
           <CircularProgress />
         )}
+        {!recommendedBooksQuery.isLoading &&
+          recommendedBooksQuery.data?.length === 0 && (
+            <Typography>Rate more books to get recommendations</Typography>
+          )}
       </Stack>
     </PageWrapper>
   );
@@ -102,8 +109,7 @@ export async function getStaticProps({ params }: { params: { id: string } }) {
 
   return {
     props: {
-      username: user.data.username,
-      id: user.data.id
+      username: user.username
     }
   };
 }

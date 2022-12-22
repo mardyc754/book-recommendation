@@ -1,8 +1,8 @@
 import * as Yup from 'yup';
 import { Grid, Button, TextField, Stack } from '@mui/material';
 import { useFormik } from 'formik';
-import { handleRegisterSubmit } from 'features/formHandlers';
-import PageWrapper from '../components/PageWrapper/PageWrapper';
+import { register } from 'api';
+import PageWrapper from '../components/PageWrapper';
 import PageHeader from 'components/PageHeader';
 
 const validationSchema = Yup.object({
@@ -28,7 +28,7 @@ const Register = () => {
       passwordConfirm: ''
     },
     validationSchema,
-    onSubmit: handleRegisterSubmit
+    onSubmit: register
   });
 
   return (

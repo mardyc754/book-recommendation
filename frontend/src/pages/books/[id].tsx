@@ -4,13 +4,8 @@ import { Stack, Typography, Button } from '@mui/material';
 import { BookDetails } from 'types';
 
 import useAuthContext from 'hooks/useAuthContext';
-import PageWrapper from 'components/PageWrapper/PageWrapper';
-import {
-  getBookById,
-  getAllBooks,
-  getBookUserRating,
-  rateBook
-} from 'features/BackendAPI';
+import PageWrapper from 'components/PageWrapper';
+import { getBookById, getAllBooks, getBookUserRating, rateBook } from 'api';
 import StarRating from 'components/StarRating';
 
 const Book = ({ initialBookData }: { initialBookData: BookDetails }) => {

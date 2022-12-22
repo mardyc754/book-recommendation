@@ -1,30 +1,21 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express, { Express } from 'express';
-import session from 'express-session';
 
-import { AbstractRouter, AuthRouter, BookRouter, UserRouter } from './routers';
-import { BookService, UserService } from './services';
+import { AbstractRouter } from './routers';
 
 export default class App {
   private readonly port = process.env.PORT || 8080;
 
   private app: Express;
 
-  constructor() {
+  constructor(routers: AbstractRouter[]) {
     this.app = express();
     this.app.use(express.urlencoded({ extended: false }));
     this.app.use(express.json());
     this.app.use(cors());
-    this.app.use(
-      session({
-        secret: 'someverymisterioussecret',
-        resave: true,
-        saveUninitialized: true
-      })
-    );
 
-    this.createRouters([new AuthRouter(), new BookRouter(), new UserRouter()]);
+    this.createRouters(routers);
   }
 
   public listen() {

@@ -1,13 +1,21 @@
 import * as React from 'react';
 import Head from 'next/head';
 import Link from 'next/link';
-import Image from 'next/image';
-import { Stack, Box, Button } from '@mui/material';
-import { User } from 'types';
-import { HeaderButton } from './styles';
+import { styled } from '@mui/system';
+import {
+  Stack,
+  Box,
+  Button as MUIButton,
+  ButtonProps as MUIButtonProps
+} from '@mui/material';
 import { useRouter } from 'next/router';
 import useAuthContext from 'hooks/useAuthContext';
-import { getCurrentUser, logout } from 'features/BackendAPI';
+import { logout } from 'api';
+
+const HeaderButton = styled(MUIButton)<MUIButtonProps>({
+  textTransform: 'unset',
+  margin: '8px'
+});
 
 type PageWrapperProps = {
   title?: string;
@@ -31,7 +39,6 @@ const PageWrapper = ({
       </Head>
       <Stack style={{ minHeight: '100vh' }}>
         <Stack
-          component="header"
           flexDirection="row"
           justifyContent="space-between"
           style={{
@@ -43,7 +50,7 @@ const PageWrapper = ({
             backgroundColor: '#fff'
           }}
         >
-          <Box>
+          <Box component="header">
             <h1>Book recommender</h1>
           </Box>
           {!isLoading && (

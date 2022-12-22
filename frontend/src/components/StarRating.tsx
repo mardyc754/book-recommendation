@@ -38,7 +38,7 @@ const StarRating = ({
   [...Array(numOfContainedStars)].forEach((_, i) => {
     stars.push(() => (
       <IconButton
-        sx={{ padding: 0 }}
+        sx={{ padding: 0, color: '#d99c34' }}
         disabled={readOnly}
         onClick={() => changeUserRating(i + 1)}
       >
@@ -50,7 +50,7 @@ const StarRating = ({
   [...Array(numOfHalfStars)].forEach((_, i) => {
     stars.push(() => (
       <IconButton
-        sx={{ padding: 0 }}
+        sx={{ padding: 0, color: '#d99c34' }}
         disabled={readOnly}
         onClick={() => changeUserRating(i + numOfContainedStars + 1)}
       >
@@ -62,7 +62,7 @@ const StarRating = ({
   [...Array(numOfOutlinedStars)].forEach((_, i) => {
     stars.push(() => (
       <IconButton
-        sx={{ padding: 0 }}
+        sx={{ padding: 0, color: '#d99c34' }}
         disabled={readOnly}
         onClick={() =>
           changeUserRating(i + numOfContainedStars + numOfHalfStars + 1)

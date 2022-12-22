@@ -8,7 +8,7 @@ import {
   Typography
 } from '@mui/material';
 
-import PageWrapper from 'components/PageWrapper/PageWrapper';
+import PageWrapper from 'components/PageWrapper';
 import BookInfo from 'components/BookInfo';
 import { CircularProgress } from '@mui/material';
 import {
@@ -16,7 +16,7 @@ import {
   getPopularBooks,
   getHighestRatedBooks,
   getRecommendedBooks
-} from '../features/BackendAPI';
+} from '../api';
 import useAuthContext from 'hooks/useAuthContext';
 
 enum DisplayOption {

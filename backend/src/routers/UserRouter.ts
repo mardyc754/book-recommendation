@@ -1,7 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 import UserService from '../services/UserService';
 import AbstractRouter from './AbstractRouter';
-import { verifyToken } from '../middlewares';
 
 export default class UserRouter extends AbstractRouter {
   private userService = new UserService();

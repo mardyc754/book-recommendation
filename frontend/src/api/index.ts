@@ -1,16 +1,14 @@
 import axios, { AxiosResponse } from 'axios';
-import Cookies from 'universal-cookie';
 import {
   BookDetails,
   User,
-  RegisterResponseData,
   Rating,
-  AuthUser
+  AuthUser,
+  LoginData,
+  RegisterData
 } from 'types';
 
 const BACKEND_BASE_URL = 'http://localhost:8080/';
-
-export const cookies = new Cookies();
 
 const fetcher = axios.create({
   baseURL: BACKEND_BASE_URL,
@@ -47,19 +45,43 @@ export const getBookById = async (isbn: string): Promise<BookDetails> => {
   return response.data;
 };
 
-export const createUser = async (
-  username: string,
-  password: string
-): Promise<AxiosResponse<RegisterResponseData>> => {
-  return await fetcher.post(`/auth/register`, { username, password });
+export const register = async ({
+  username,
+  password,
+  passwordConfirm
+}: RegisterData): Promise<void> => {
+  if (password !== passwordConfirm) {
+    alert('Passwords do not match');
+    return;
+  }
+
+  await fetcher
+    .post(`/auth/register`, { username, password })
+    .then((res) => {
+      alert(`User account for ${res.data.username} created successfully`);
+    })
+    .catch((err) => {
+      alert(err.response.data.message);
+    });
 };
 
-export const login = async (
-  username: string,
-  password: string
-): Promise<AxiosResponse<User>> => {
-  // 1,PerkySkylight55,kGhEzUkdwi9Y1S6e
-  return await fetcher.post(`/auth/login`, { username, password });
+export const login = async ({
+  username,
+  password
+}: LoginData): Promise<void> => {
+  await fetcher
+    .post(`/auth/login`, { username, password })
+    .then((res) => {
+      if (res.data.token) {
+        localStorage.setItem('user', JSON.stringify(res.data));
+        alert('Successfully logged in');
+        window.location.href = '/';
+      }
+      return res.data;
+    })
+    .catch((err) => {
+      alert(err.response.data.message);
+    });
 };
 
 export const logout = async (): Promise<void> => {
@@ -80,10 +102,9 @@ export const getAllUsers = async (): Promise<AxiosResponse<User[]>> => {
   return await fetcher.get('/users');
 };
 
-export const getUserByUsername = async (
-  username: string
-): Promise<AxiosResponse<User>> => {
-  return await fetcher.get(`/users/${username}`);
+export const getUserByUsername = async (username: string): Promise<User> => {
+  const response = await fetcher.get(`/users/${username}`);
+  return response.data;
 };
 
 export const getUserBooks = async (

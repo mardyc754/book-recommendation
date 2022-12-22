@@ -1,5 +1,5 @@
 import * as bcrypt from 'bcryptjs';
-import e, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserService } from '../services';
 
@@ -16,7 +16,6 @@ export default class AuthRouter extends AbstractRouter {
     this.router.post('/register', this.register);
     this.router.post('/login', this.login);
     this.router.post('/logout', this.logout);
-    // this.router.get('/user', verifyToken, this.getCurrentUser);
   }
 
   private register = async (req: Request, res: Response): Promise<void> => {
@@ -31,9 +30,9 @@ export default class AuthRouter extends AbstractRouter {
       return;
     }
 
-    user = await this.userService.createUser(username, password);
-    // const hashedPassword = await bcrypt.hash(password, 8);
-    // user = await this.userService.createUser(username, hashedPassword)
+    const hashedPassword = await bcrypt.hash(password, 8);
+    user = await this.userService.createUser(username, hashedPassword);
+
     res
       .status(201)
       .send({ username: user?.username, message: 'User created succesfully' });
@@ -44,8 +43,7 @@ export default class AuthRouter extends AbstractRouter {
 
     if (!username || !password) {
       res.status(400).send({
-        error: 'Empty username or password',
-        isAuthenticated: false
+        message: 'Empty username or password'
       });
     }
 
@@ -53,6 +51,16 @@ export default class AuthRouter extends AbstractRouter {
 
     if (user === null) {
       res.status(400).send({ message: 'Wrong credentials' });
+      return;
+    }
+
+    const isValidPassword = await bcrypt.compare(
+      password,
+      user.password as string
+    );
+
+    if (!isValidPassword) {
+      res.status(400).send({ message: 'Wrong username or password' });
       return;
     }
 
@@ -68,7 +76,6 @@ export default class AuthRouter extends AbstractRouter {
     res.status(200).send({
       token,
       message: 'Logged in',
-      isAuthenticated: true,
       username: user.username,
       id: user.id
     });

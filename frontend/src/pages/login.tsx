@@ -2,8 +2,8 @@ import * as Yup from 'yup';
 import { useFormik } from 'formik';
 import { TextField, Button, Stack, Grid } from '@mui/material';
 
-import { handleLoginSubmit } from 'features/formHandlers';
-import PageWrapper from '../components/PageWrapper/PageWrapper';
+import { login } from 'api';
+import PageWrapper from '../components/PageWrapper';
 import PageHeader from 'components/PageHeader';
 
 const validationSchema = Yup.object({
@@ -25,7 +25,7 @@ const Login = () => {
       passwordConfirm: ''
     },
     validationSchema,
-    onSubmit: handleLoginSubmit
+    onSubmit: login
   });
 
   return (
