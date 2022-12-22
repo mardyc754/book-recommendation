@@ -8,7 +8,7 @@ export type Book = {
 };
 
 export type BookDetails = {
-  numOfRatings: number | { low: number; high: number };
+  numOfRatings: number;
   rating: number;
   userRating?: number;
 } & Book;

@@ -41,7 +41,7 @@ const BookInfo = ({ data }: BookInfoProps): JSX.Element => {
           <Typography sx={{ fontSize: '22px' }}>{title}</Typography>
           <p>{author}</p>
           <p>
-            Rating: {rating} ({numOfRatings.low ?? numOfRatings})
+            Rating: {rating} ({numOfRatings ?? numOfRatings})
           </p>
           <StarRating bookId={ISBN} value={rating} iconSize="small" readOnly />
         </Stack>
