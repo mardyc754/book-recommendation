@@ -8,9 +8,11 @@ import {
   RegisterData
 } from 'types';
 
-const BACKEND_BASE_URL = process.env.BACKEND_BASE_URL;
+console.log(process.env);
+const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 const fetcher = axios.create({
+  // baseURL: 'https://bookrecommender-2kdl.onrender.com/',
   baseURL: BACKEND_BASE_URL,
   headers: {
     'Content-type': 'application/json'
