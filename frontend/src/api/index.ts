@@ -8,7 +8,6 @@ import {
   RegisterData
 } from 'types';
 
-console.log(process.env);
 const BACKEND_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 const fetcher = axios.create({
